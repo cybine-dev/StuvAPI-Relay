@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import javax.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -24,6 +25,7 @@ public class LectureEndpointImpl implements LectureEndpoint
     @Override
     public LectureDto fetch(UUID id)
     {
-        return this.lectureRepository.getLectureById(id).orElseThrow();
+        return this.lectureRepository.getLectureById(id)
+                .orElseThrow(( ) -> new NoSuchElementException(String.format("No lecture found for id '%s'", id)));
     }
 }
