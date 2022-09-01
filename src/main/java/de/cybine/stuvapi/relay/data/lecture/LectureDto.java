@@ -22,6 +22,8 @@ public class LectureDto
 
     private final Type type;
 
+    private final boolean isArchived;
+
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
     private final LocalDateTime startsAt;

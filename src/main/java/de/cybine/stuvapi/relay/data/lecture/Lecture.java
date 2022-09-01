@@ -40,6 +40,9 @@ public class Lecture
     @Column(name = "type", nullable = false)
     private int type;
 
+    @Column(name = "archived", nullable = false)
+    private boolean isArchived;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

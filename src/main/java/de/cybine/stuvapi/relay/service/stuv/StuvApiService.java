@@ -185,8 +185,13 @@ public class StuvApiService
             syncDetails.add(this.initialSync(lecture));
         }
 
-        deletedLectures.stream().map(this::removalSync).forEach(syncDetails::add);
-        deletedLectures.forEach(session::delete);
+        for(Lecture lecture : deletedLectures)
+        {
+            lecture.setArchived(true);
+            session.update(lecture);
+
+            syncDetails.add(this.removalSync(lecture));
+        }
 
         return syncDetails;
     }

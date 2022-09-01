@@ -27,10 +27,10 @@ CREATE TABLE lectures
     starts_at  DATETIME     NOT NULL,
     ends_at    DATETIME     NOT NULL,
     type       TINYINT      NOT NULL,
+    archived   TINYINT      NOT NULL,
     course     VARCHAR(64),
     lecturer   TEXT,
-    PRIMARY KEY (id),
-    CONSTRAINT Lectures_LectureId_SK UNIQUE KEY (lecture_id)
+    PRIMARY KEY (id)
 );
 
 CREATE TABLE lecture_rooms
