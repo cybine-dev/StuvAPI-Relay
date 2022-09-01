@@ -7,7 +7,7 @@ RUN gradle clean build --no-daemon
 
 FROM ibm-semeru-runtimes:open-17-jre-focal AS release
 ENV SETTINGS_DATABASE_VENDOR mariadb
-ENV SETTINGS_DATABASE_URL jdbc:mariadb://localhost/evergreen
+ENV SETTINGS_DATABASE_URL jdbc:mariadb://localhost/stuvapi
 ENV SETTINGS_DATABASE_USER root
 ENV SETTINGS_DATABASE_PASSWORD password
 
