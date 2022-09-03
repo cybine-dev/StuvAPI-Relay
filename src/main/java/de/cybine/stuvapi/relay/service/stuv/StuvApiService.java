@@ -118,7 +118,7 @@ public class StuvApiService
     private List<Lecture> getPersistentLectures(Session session, LocalDateTime until)
     {
         return session.createQuery(
-                "SELECT DISTINCT item FROM Lecture item LEFT JOIN FETCH item.rooms WHERE item.endsAt >= :until",
+                "SELECT DISTINCT item FROM Lecture item LEFT JOIN FETCH item.rooms WHERE item.isArchived IS FALSE AND item.endsAt >= :until",
                 Lecture.class).setParameter("until", until).getResultList();
     }
 
@@ -185,7 +185,7 @@ public class StuvApiService
             syncDetails.add(this.initialSync(lecture));
         }
 
-        for(Lecture lecture : deletedLectures)
+        for (Lecture lecture : deletedLectures)
         {
             lecture.setArchived(true);
             session.update(lecture);
