@@ -23,6 +23,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-liquibase'
     implementation 'io.quarkus:quarkus-arc'
     implementation 'org.jboss.logmanager:log4j2-jboss-logmanager'
+    implementation 'net.sf.biweekly:biweekly:0.6.6'
 
     compileOnly 'org.projectlombok:lombok:1.18.24'
 

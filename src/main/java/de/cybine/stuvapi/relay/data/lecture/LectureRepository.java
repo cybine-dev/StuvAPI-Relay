@@ -17,6 +17,17 @@ public class LectureRepository
 
     private final LectureMapper lectureMapper;
 
+    public List<LectureDto> getAllLectures()
+    {
+        return this.entityManager.createQuery(
+                        "SELECT lecture FROM Lecture lecture WHERE lecture.isArchived IS FALSE",
+                        Lecture.class)
+                .getResultList()
+                .stream()
+                .map(this.lectureMapper::toData)
+                .toList();
+    }
+
     public List<LectureDto> getAllLectures(String course, LocalDateTime from, LocalDateTime until)
     {
         return this.entityManager.createQuery(
