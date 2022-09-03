@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.UUID;
 
-@Path("/lecture")
+@Path("api/v1/lecture")
 @Produces(MediaType.APPLICATION_JSON)
 public interface LectureEndpoint
 {
