@@ -182,7 +182,7 @@ public class StuvApiService
                     .collect(Collectors.toSet()));
 
             session.persist(lecture);
-            syncDetails.add(this.initialSync(lecture));
+            syncDetails.add(this.getLectureSyncData(lecture, SyncDto.Type.CREATED));
         }
 
         for (Lecture lecture : deletedLectures)
@@ -190,7 +190,7 @@ public class StuvApiService
             lecture.setArchived(true);
             session.update(lecture);
 
-            syncDetails.add(this.removalSync(lecture));
+            syncDetails.add(this.getLectureSyncData(lecture, SyncDto.Type.DELETED));
         }
 
         return syncDetails;
@@ -264,20 +264,12 @@ public class StuvApiService
                 .build());
     }
 
-    private SyncDto.LectureSync initialSync(Lecture lecture)
+    private SyncDto.LectureSync getLectureSyncData(Lecture lecture, SyncDto.Type type)
     {
         return SyncDto.LectureSync.builder()
                 .lectureId(lecture.getId())
-                .type(SyncDto.Type.CREATED)
                 .details(this.getCompleteSyncData(lecture))
-                .build();
-    }
-
-    private SyncDto.LectureSync removalSync(Lecture lecture)
-    {
-        return SyncDto.LectureSync.builder()
-                .type(SyncDto.Type.DELETED)
-                .details(this.getCompleteSyncData(lecture))
+                .type(type)
                 .build();
     }
 
