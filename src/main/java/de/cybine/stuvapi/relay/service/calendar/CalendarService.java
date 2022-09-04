@@ -95,6 +95,23 @@ public class CalendarService
         event.setDateStart(this.transformLocalDateTime(data.getStartsAt()), true);
         event.setDateEnd(this.transformLocalDateTime(data.getEndsAt()), true);
 
+        if (data.isExam())
+            event.addCategories(CalendarCategories.EXAM.getDisplayName());
+
+        if (data.isHoliday())
+            event.addCategories(CalendarCategories.HOLIDAY.getDisplayName());
+
+        if (data.isRegularLecture())
+        {
+            event.addCategories(CalendarCategories.LECTURE.getDisplayName());
+            switch (data.getType())
+            {
+                case ONLINE -> event.addCategories(CalendarCategories.ONLINE.getDisplayName());
+                case PRESENCE -> event.addCategories(CalendarCategories.PRESENCE.getDisplayName());
+                case HYBRID -> event.addCategories(CalendarCategories.HYBRID.getDisplayName());
+            }
+        }
+
         return event;
     }
 

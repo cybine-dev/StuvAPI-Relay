@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Data
@@ -44,6 +45,24 @@ public class LectureDto
     public Optional<String> getLecturer( )
     {
         return Optional.ofNullable(this.lecturer);
+    }
+
+    public boolean isHoliday( )
+    {
+        boolean beginsAtEightOClock = this.startsAt.toLocalTime().equals(LocalTime.of(7, 0));
+        boolean endsAtEighteenOClock = this.endsAt.toLocalTime().equals(LocalTime.of(17, 0));
+
+        return beginsAtEightOClock && endsAtEighteenOClock && this.rooms.isEmpty();
+    }
+
+    public boolean isExam( )
+    {
+        return this.name.toLowerCase().startsWith("klausur ");
+    }
+
+    public boolean isRegularLecture( )
+    {
+        return !this.isExam() && !this.isHoliday();
     }
 
     @Getter
