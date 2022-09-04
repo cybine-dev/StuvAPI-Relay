@@ -1,5 +1,6 @@
 package de.cybine.stuvapi.relay.data.sync;
 
+import de.cybine.stuvapi.relay.data.lecture.LectureDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -33,9 +34,10 @@ public class SyncDto
     {
         private final UUID id;
         private final UUID syncId;
-        private final UUID lectureId;
 
         private final Type type;
+
+        private final LectureDto lecture;
 
         private List<SyncDetail> details;
 
@@ -47,11 +49,6 @@ public class SyncDto
         public Optional<UUID> getSyncId( )
         {
             return Optional.ofNullable(this.syncId);
-        }
-
-        public Optional<UUID> getLectureId( )
-        {
-            return Optional.ofNullable(this.lectureId);
         }
     }
 

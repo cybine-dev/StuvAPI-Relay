@@ -258,7 +258,7 @@ public class StuvApiService
             return Optional.empty();
 
         return Optional.of(SyncDto.LectureSync.builder()
-                .lectureId(lectureData.getId())
+                .lecture(this.lectureMapper.toData(lectureData))
                 .type(SyncDto.Type.UPDATED)
                 .details(details)
                 .build());
@@ -267,7 +267,7 @@ public class StuvApiService
     private SyncDto.LectureSync getLectureSyncData(Lecture lecture, SyncDto.Type type)
     {
         return SyncDto.LectureSync.builder()
-                .lectureId(lecture.getId())
+                .lecture(this.lectureMapper.toData(lecture))
                 .details(this.getCompleteSyncData(lecture))
                 .type(type)
                 .build();
