@@ -19,6 +19,8 @@ import org.hibernate.Transaction;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,7 +54,7 @@ public class StuvApiService
         {
             Transaction transaction = session.beginTransaction();
 
-            Sync sync = Sync.builder().startedAt(LocalDateTime.now()).build();
+            Sync sync = Sync.builder().startedAt(ZonedDateTime.now()).build();
             session.persist(sync);
             log.debug("Sync created");
 
@@ -60,7 +62,7 @@ public class StuvApiService
             log.debug("{} lectures fetched from api", updateLectures.size());
 
             List<Lecture> persistentLectures = this.getPersistentLectures(session,
-                    includeArchived ? LocalDateTime.MIN : sync.getStartedAt());
+                    includeArchived ? LocalDateTime.MIN.atZone(ZoneId.systemDefault()) : sync.getStartedAt());
             log.debug("{} lectures loaded from database", persistentLectures.size());
 
             Map<String, Room> rooms = this.persistRooms(session,
@@ -89,7 +91,7 @@ public class StuvApiService
             log.debug("{} lecture sync details persisted", lectureSyncs.size());
 
             sync.setData(lectureSyncs);
-            sync.setFinishedAt(LocalDateTime.now());
+            sync.setFinishedAt(ZonedDateTime.now());
             session.update(sync);
 
             transaction.commit();
@@ -115,7 +117,7 @@ public class StuvApiService
         return roomSet.stream().collect(Collectors.toMap(Room::getName, room -> room));
     }
 
-    private List<Lecture> getPersistentLectures(Session session, LocalDateTime until)
+    private List<Lecture> getPersistentLectures(Session session, ZonedDateTime until)
     {
         return session.createQuery(
                 "SELECT DISTINCT item FROM Lecture item LEFT JOIN FETCH item.rooms WHERE item.isArchived IS FALSE AND item.endsAt >= :until",
@@ -159,7 +161,7 @@ public class StuvApiService
             persistentLecture.setCourse(updateLecture.getCourse().orElse(null));
             persistentLecture.setLecturer(updateLecture.getLecturer().orElse(null));
             persistentLecture.setType(updateLecture.getType().getTypeId());
-            persistentLecture.setUpdatedAt(LocalDateTime.now());
+            persistentLecture.setUpdatedAt(ZonedDateTime.now());
             persistentLecture.setStartsAt(updateLecture.getStartsAt());
             persistentLecture.setEndsAt(updateLecture.getEndsAt());
             persistentLecture.setRooms(updateLecture.getRooms()

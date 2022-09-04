@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,18 +17,13 @@ public class LectureRepository
 
     private final LectureMapper lectureMapper;
 
-    public List<LectureDto> getAllLectures()
+    public List<LectureDto> getAllLectures( )
     {
-        return this.entityManager.createQuery(
-                        "SELECT lecture FROM Lecture lecture WHERE lecture.isArchived IS FALSE",
-                        Lecture.class)
-                .getResultList()
-                .stream()
-                .map(this.lectureMapper::toData)
-                .toList();
+        return this.entityManager.createQuery("SELECT lecture FROM Lecture lecture WHERE lecture.isArchived IS FALSE",
+                Lecture.class).getResultList().stream().map(this.lectureMapper::toData).toList();
     }
 
-    public List<LectureDto> getAllLectures(String course, LocalDateTime from, LocalDateTime until)
+    public List<LectureDto> getAllLectures(String course, ZonedDateTime from, ZonedDateTime until)
     {
         return this.entityManager.createQuery(
                         "SELECT lecture FROM Lecture lecture WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until)",

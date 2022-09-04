@@ -17,7 +17,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,11 +80,12 @@ public class StuvApi
                     .course((String) lectureData.get("course"))
                     .lecturer((String) lectureData.get("lecturer"))
                     .type(LectureDto.Type.valueOf((String) lectureData.get("type")))
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
-                    .startsAt(LocalDateTime.parse((String) lectureData.get("startTime"),
-                            DateTimeFormatter.ISO_DATE_TIME))
-                    .endsAt(LocalDateTime.parse((String) lectureData.get("endTime"), DateTimeFormatter.ISO_DATE_TIME))
+                    .createdAt(ZonedDateTime.now())
+                    .updatedAt(ZonedDateTime.now())
+                    .startsAt(OffsetDateTime.parse((String) lectureData.get("startTime"),
+                            DateTimeFormatter.ISO_DATE_TIME).atZoneSameInstant(ZoneId.systemDefault()))
+                    .endsAt(OffsetDateTime.parse((String) lectureData.get("endTime"), DateTimeFormatter.ISO_DATE_TIME)
+                            .atZoneSameInstant(ZoneId.systemDefault()))
                     .rooms(((List<?>) lectureData.getOrDefault("rooms", Collections.emptyList())).stream()
                             .map(Object::toString)
                             .map(RoomDto.builder()::name)

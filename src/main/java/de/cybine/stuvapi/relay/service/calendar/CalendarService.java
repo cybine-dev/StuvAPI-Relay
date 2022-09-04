@@ -18,8 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -115,8 +114,8 @@ public class CalendarService
         return event;
     }
 
-    private Date transformLocalDateTime(LocalDateTime dateTime)
+    private Date transformLocalDateTime(ZonedDateTime dateTime)
     {
-        return Date.from(dateTime.toInstant(ZoneOffset.UTC));
+        return Date.from(dateTime.toInstant());
     }
 }

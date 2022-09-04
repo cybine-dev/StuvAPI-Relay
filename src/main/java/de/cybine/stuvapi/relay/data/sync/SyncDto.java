@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +18,8 @@ public class SyncDto
 {
     private final UUID id;
 
-    private final LocalDateTime startedAt;
-    private final LocalDateTime finishedAt;
+    private final ZonedDateTime startedAt;
+    private final ZonedDateTime finishedAt;
 
     private final List<LectureSync> data;
 

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -19,7 +20,9 @@ public class LectureEndpointImpl implements LectureEndpoint
     @Override
     public Collection<LectureDto> fetchAll(LocalDateTime from, LocalDateTime until, String course)
     {
-        return this.lectureRepository.getAllLectures(course, from, until);
+        return this.lectureRepository.getAllLectures(course,
+                from == null ? null : from.atZone(ZoneId.systemDefault()),
+                until == null ? null : until.atZone(ZoneId.systemDefault()));
     }
 
     @Override

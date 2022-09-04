@@ -6,12 +6,13 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -44,16 +45,16 @@ public class Lecture
     private boolean isArchived;
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private ZonedDateTime updatedAt;
 
     @Column(name = "starts_at", nullable = false)
-    private LocalDateTime startsAt;
+    private ZonedDateTime startsAt;
 
     @Column(name = "ends_at", nullable = false)
-    private LocalDateTime endsAt;
+    private ZonedDateTime endsAt;
 
     @ManyToMany
     @JoinTable(name = "lecture_rooms",

@@ -6,9 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder(builderClassName = "Builder")
@@ -25,10 +28,10 @@ public class LectureDto
 
     private final boolean isArchived;
 
-    private final LocalDateTime createdAt;
-    private final LocalDateTime updatedAt;
-    private final LocalDateTime startsAt;
-    private final LocalDateTime endsAt;
+    private final ZonedDateTime createdAt;
+    private final ZonedDateTime updatedAt;
+    private final ZonedDateTime startsAt;
+    private final ZonedDateTime endsAt;
 
     private final Set<RoomDto> rooms;
 

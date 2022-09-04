@@ -5,11 +5,12 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,10 +25,10 @@ public class Sync
     private UUID id;
 
     @Column(name = "started_at", nullable = false)
-    private LocalDateTime startedAt;
+    private ZonedDateTime startedAt;
 
     @Column(name = "finished_at")
-    private LocalDateTime finishedAt;
+    private ZonedDateTime finishedAt;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "sync")
     private List<LectureSync> data;
