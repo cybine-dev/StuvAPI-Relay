@@ -21,7 +21,7 @@ public class TaskScheduler
     private final StuvApiService  stuvApiService;
     private final CalendarService calendarService;
 
-    @Scheduled(every = "12h", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    @Scheduled(every = "30m", concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncAllLectures( ) throws InterruptedException, JsonProcessingException
     {
         this.logLectureSyncResult(this.stuvApiService.updateAll(true)
@@ -29,7 +29,7 @@ public class TaskScheduler
                 .orElse(Collections.emptyList()));
     }
 
-    @Scheduled(every = "10m", delay = 5, concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
+    //@Scheduled(every = "10m", delay = 5, concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
     public void syncFutureLectures( ) throws InterruptedException, JsonProcessingException
     {
         this.logLectureSyncResult(this.stuvApiService.updateAll(false)
