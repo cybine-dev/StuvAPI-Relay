@@ -1,5 +1,6 @@
 package de.cybine.stuvapi.relay.data.lecture;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.cybine.stuvapi.relay.data.room.RoomDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,6 +51,7 @@ public class LectureDto
         return Optional.ofNullable(this.lecturer);
     }
 
+    @JsonIgnore
     public boolean isHoliday( )
     {
         boolean beginsAtEightOClock = this.startsAt.toLocalTime().equals(LocalTime.of(7, 0));
@@ -58,11 +60,13 @@ public class LectureDto
         return beginsAtEightOClock && endsAtEighteenOClock && this.rooms.isEmpty();
     }
 
+    @JsonIgnore
     public boolean isExam( )
     {
         return this.name.toLowerCase().startsWith("klausur ");
     }
 
+    @JsonIgnore
     public boolean isRegularLecture( )
     {
         return !this.isExam() && !this.isHoliday();
