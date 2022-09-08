@@ -82,7 +82,7 @@ public class CalendarService
     private VEvent getEvent(LectureDto data)
     {
         VEvent event = new VEvent();
-        event.setUid(String.format("%s@dhbw.cybine.de", data.getId().orElseThrow()));
+        event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.getId().orElseThrow()));
         event.setClassification(Classification.public_());
 
         event.setSummary(data.getName());
