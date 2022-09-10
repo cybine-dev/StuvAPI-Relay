@@ -102,6 +102,7 @@ public class CalendarService
 
         if (data.isRegularLecture())
         {
+            event.addCategories(data.getName());
             event.addCategories(CalendarCategories.LECTURE.getDisplayName());
             switch (data.getType())
             {
