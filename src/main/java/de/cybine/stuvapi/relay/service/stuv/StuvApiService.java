@@ -66,7 +66,11 @@ public class StuvApiService
             log.debug("{} lectures loaded from database", persistentLectures.size());
 
             Map<String, Room> rooms = this.persistRooms(session,
-                    updateLectures.stream().map(LectureDto::getRooms).flatMap(Collection::stream).toList());
+                    updateLectures.stream()
+                            .map(LectureDto::getRooms)
+                            .map(Optional::orElseThrow)
+                            .flatMap(Collection::stream)
+                            .toList());
             log.debug("{} rooms fetched", rooms.size());
 
             List<Sync.LectureSync> lectureSyncs = this.syncLectures(session,
@@ -165,6 +169,7 @@ public class StuvApiService
             persistentLecture.setStartsAt(updateLecture.getStartsAt());
             persistentLecture.setEndsAt(updateLecture.getEndsAt());
             persistentLecture.setRooms(updateLecture.getRooms()
+                    .orElseThrow()
                     .stream()
                     .map(RoomDto::getName)
                     .map(fetchRoom)
@@ -243,7 +248,11 @@ public class StuvApiService
                     .currentValue(lecture.getEndsAt().toString())
                     .build());
 
-        Set<String> lectureRoomNames = lecture.getRooms().stream().map(RoomDto::getName).collect(Collectors.toSet());
+        Set<String> lectureRoomNames = lecture.getRooms()
+                .orElseThrow()
+                .stream()
+                .map(RoomDto::getName)
+                .collect(Collectors.toSet());
         Set<String> lectureDataRoomNames = lectureData.getRooms()
                 .stream()
                 .map(Room::getName)
@@ -253,7 +262,11 @@ public class StuvApiService
             details.add(SyncDto.SyncDetail.builder()
                     .fieldName("rooms")
                     .previousValue(lectureData.getRooms().stream().map(Room::getName).collect(Collectors.joining(", ")))
-                    .currentValue(lecture.getRooms().stream().map(RoomDto::getName).collect(Collectors.joining(", ")))
+                    .currentValue(lecture.getRooms()
+                            .orElseThrow()
+                            .stream()
+                            .map(RoomDto::getName)
+                            .collect(Collectors.joining(", ")))
                     .build());
 
         if (details.isEmpty())

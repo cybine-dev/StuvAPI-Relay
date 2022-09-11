@@ -28,6 +28,11 @@ public class SyncDto
         return Optional.ofNullable(this.id);
     }
 
+    public Optional<List<LectureSync>> getData( )
+    {
+        return Optional.ofNullable(this.data);
+    }
+
     @Data
     @Builder(builderClassName = "Builder")
     public static class LectureSync
@@ -49,6 +54,11 @@ public class SyncDto
         public Optional<UUID> getSyncId( )
         {
             return Optional.ofNullable(this.syncId);
+        }
+
+        public Optional<LectureDto> getLecture( )
+        {
+            return Optional.ofNullable(this.lecture);
         }
     }
 

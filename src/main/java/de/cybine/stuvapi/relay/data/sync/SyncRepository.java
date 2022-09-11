@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import javax.enterprise.context.ApplicationScoped;
 import javax.persistence.EntityManager;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -14,24 +13,43 @@ public class SyncRepository
 {
     private final EntityManager entityManager;
 
-    private final SyncMapper syncMapper;
+    private final SyncMapper        syncMapper;
+    private final LectureSyncMapper lectureSyncMapper;
 
-    public List<SyncDto> getAll( )
+    public List<SyncDto> getSyncs(int limit, int offset)
     {
-        return this.entityManager.createQuery(
-                "SELECT sync FROM Sync sync LEFT JOIN FETCH sync.data data LEFT JOIN FETCH data.lecture",
-                Sync.class).getResultList().stream().map(this.syncMapper::toData).toList();
+        return this.entityManager.createQuery("SELECT sync FROM Sync sync ORDER BY sync.startedAt", Sync.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList()
+                .stream()
+                .map(this.syncMapper::toData)
+                .toList();
     }
 
-    public List<UUID> getAllIds( )
+    public long getSyncCount( )
     {
-        return this.entityManager.createQuery("SELECT sync.id FROM Sync sync", UUID.class).getResultList();
+        return this.entityManager.createQuery("SELECT COUNT(sync) FROM Sync sync", Long.class).getSingleResult();
     }
 
-    public Optional<SyncDto> getById(UUID id)
+    public List<SyncDto.LectureSync> getDetailsById(UUID id, int limit, int offset)
     {
         return this.entityManager.createQuery(
-                "SELECT sync FROM Sync sync LEFT JOIN FETCH sync.data data LEFT JOIN FETCH data.lecture WHERE sync.id = :id",
-                Sync.class).setParameter("id", id).getResultStream().findAny().map(this.syncMapper::toData);
+                        "SELECT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture WHERE sync.id = :id ORDER BY data.id",
+                        Sync.LectureSync.class)
+                .setParameter("id", id)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList()
+                .stream()
+                .map(this.lectureSyncMapper::toData)
+                .toList();
+    }
+
+    public long getDetailCount(UUID id)
+    {
+        return this.entityManager.createQuery(
+                "SELECT COUNT(data) FROM Sync sync JOIN sync.data data WHERE sync.id = :id",
+                Long.class).setParameter("id", id).getSingleResult();
     }
 }

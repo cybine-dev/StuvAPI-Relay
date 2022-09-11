@@ -87,7 +87,11 @@ public class CalendarService
 
         event.setSummary(data.getName());
         event.setOrganizer(data.getLecturer().orElse("N/A"));
-        event.setLocation(data.getRooms().stream().map(RoomDto::getDisplayName).collect(Collectors.joining("; ")));
+        event.setLocation(data.getRooms()
+                .orElseThrow()
+                .stream()
+                .map(RoomDto::getDisplayName)
+                .collect(Collectors.joining("; ")));
 
         event.setCreated(this.transformLocalDateTime(data.getCreatedAt()));
         event.setLastModified(this.transformLocalDateTime(data.getUpdatedAt()));

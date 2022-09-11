@@ -3,6 +3,7 @@ package de.cybine.stuvapi.relay.data.lecture;
 import de.cybine.stuvapi.relay.data.EntityMapper;
 import de.cybine.stuvapi.relay.data.room.RoomMapper;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.stream.Collectors;
@@ -13,7 +14,7 @@ public class LectureMapper implements EntityMapper<Lecture, LectureDto>
 {
     private final RoomMapper roomMapper;
 
-    public Lecture toEntity(final LectureDto data)
+    public Lecture toEntity(LectureDto data)
     {
         return Lecture.builder()
                 .id(data.getId().orElse(null))
@@ -27,11 +28,13 @@ public class LectureMapper implements EntityMapper<Lecture, LectureDto>
                 .updatedAt(data.getUpdatedAt())
                 .startsAt(data.getStartsAt())
                 .endsAt(data.getEndsAt())
-                .rooms(data.getRooms().stream().map(this.roomMapper::toEntity).collect(Collectors.toSet()))
+                .rooms(data.getRooms()
+                        .map(rooms -> rooms.stream().map(this.roomMapper::toEntity).collect(Collectors.toSet()))
+                        .orElse(null))
                 .build();
     }
 
-    public LectureDto toData(final Lecture entity)
+    public LectureDto toData(Lecture entity)
     {
         return LectureDto.builder()
                 .id(entity.getId())
@@ -45,7 +48,10 @@ public class LectureMapper implements EntityMapper<Lecture, LectureDto>
                 .updatedAt(entity.getUpdatedAt())
                 .startsAt(entity.getStartsAt())
                 .endsAt(entity.getEndsAt())
-                .rooms(entity.getRooms().stream().map(this.roomMapper::toData).collect(Collectors.toSet()))
+                .rooms(Hibernate.isInitialized(entity.getRooms()) ? entity.getRooms()
+                        .stream()
+                        .map(this.roomMapper::toData)
+                        .collect(Collectors.toSet()) : null)
                 .build();
     }
 }

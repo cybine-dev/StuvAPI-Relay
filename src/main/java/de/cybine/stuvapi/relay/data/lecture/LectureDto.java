@@ -51,6 +51,11 @@ public class LectureDto
         return Optional.ofNullable(this.lecturer);
     }
 
+    public Optional<Set<RoomDto>> getRooms( )
+    {
+        return Optional.ofNullable(this.rooms);
+    }
+
     @JsonIgnore
     public boolean isHoliday( )
     {

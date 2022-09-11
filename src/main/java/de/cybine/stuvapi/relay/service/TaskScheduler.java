@@ -25,15 +25,7 @@ public class TaskScheduler
     public void syncAllLectures( ) throws InterruptedException, JsonProcessingException
     {
         this.logLectureSyncResult(this.stuvApiService.updateAll(true)
-                .map(SyncDto::getData)
-                .orElse(Collections.emptyList()));
-    }
-
-    //@Scheduled(every = "10m", delay = 5, concurrentExecution = Scheduled.ConcurrentExecution.SKIP)
-    public void syncFutureLectures( ) throws InterruptedException, JsonProcessingException
-    {
-        this.logLectureSyncResult(this.stuvApiService.updateAll(false)
-                .map(SyncDto::getData)
+                .flatMap(SyncDto::getData)
                 .orElse(Collections.emptyList()));
     }
 

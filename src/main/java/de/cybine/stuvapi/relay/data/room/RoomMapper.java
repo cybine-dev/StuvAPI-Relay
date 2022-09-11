@@ -10,7 +10,7 @@ import javax.enterprise.context.ApplicationScoped;
 public class RoomMapper implements EntityMapper<Room, RoomDto>
 {
     @Override
-    public Room toEntity(final RoomDto data)
+    public Room toEntity(RoomDto data)
     {
         return Room.builder()
                 .id(data.getId().orElse(null))
@@ -20,7 +20,7 @@ public class RoomMapper implements EntityMapper<Room, RoomDto>
     }
 
     @Override
-    public RoomDto toData(final Room entity)
+    public RoomDto toData(Room entity)
     {
         return RoomDto.builder().id(entity.getId()).name(entity.getName()).displayName(entity.getDisplayName()).build();
     }

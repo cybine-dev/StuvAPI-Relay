@@ -1,13 +1,16 @@
 package de.cybine.stuvapi.relay.api.v1;
 
-import de.cybine.stuvapi.relay.data.sync.SyncDto;
+import de.cybine.stuvapi.relay.api.v1.result.PaginationResult;
+import de.cybine.stuvapi.relay.api.v1.result.SyncInfo;
+import de.cybine.stuvapi.relay.api.v1.result.SyncSummary;
 import org.jboss.resteasy.reactive.RestResponse;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
+import javax.ws.rs.core.UriInfo;
 import java.util.UUID;
 
 @Path("api/v1/sync")
@@ -15,14 +18,14 @@ import java.util.UUID;
 public interface SyncEndpoint
 {
     @GET
-    @Path("/all")
-    RestResponse<Collection<SyncDto>> fetchAll( );
-
-    @GET
-    @Path("/ids")
-    RestResponse<Collection<UUID>> fetchSyncIds( );
+    RestResponse<PaginationResult<SyncSummary>> fetchSyncs(@Context UriInfo uriInfo,
+            @QueryParam("limit") @Min(1) @Max(50) @DefaultValue("20") int limit,
+            @QueryParam("offset") @DefaultValue("0") int offset);
 
     @GET
     @Path("/{id}")
-    RestResponse<SyncDto> fetchSync(UUID id);
+    RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(@Context UriInfo uriInfo, UUID id,
+            @QueryParam("detailed") @DefaultValue("true") boolean detailed,
+            @QueryParam("limit") @Min(1) @Max(50) @DefaultValue("20") int limit,
+            @QueryParam("offset") @DefaultValue("0") int offset);
 }

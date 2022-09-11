@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cybine.stuvapi.relay.data.EntityConversionException;
 import de.cybine.stuvapi.relay.data.EntityMapper;
+import de.cybine.stuvapi.relay.data.lecture.Lecture;
 import de.cybine.stuvapi.relay.data.lecture.LectureMapper;
 import lombok.AllArgsConstructor;
+import org.hibernate.Hibernate;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
@@ -19,14 +21,14 @@ public class LectureSyncMapper implements EntityMapper<Sync.LectureSync, SyncDto
     private final LectureMapper lectureMapper;
 
     @Override
-    public Sync.LectureSync toEntity(final SyncDto.LectureSync data)
+    public Sync.LectureSync toEntity(SyncDto.LectureSync data)
     {
         try
         {
             return Sync.LectureSync.builder()
                     .id(data.getId().orElse(null))
                     .sync(data.getSyncId().map(id -> Sync.builder().id(id).build()).orElse(null))
-                    .lecture(this.lectureMapper.toEntity(data.getLecture()))
+                    .lecture(Lecture.builder().id(data.getId().orElseThrow()).build())
                     .type(data.getType().getTypeId())
                     .details(this.objectMapper.writeValueAsString(data.getDetails()))
                     .build();
@@ -45,8 +47,8 @@ public class LectureSyncMapper implements EntityMapper<Sync.LectureSync, SyncDto
         {
             return SyncDto.LectureSync.builder()
                     .id(entity.getId())
-                    .syncId(entity.getSync() == null ? null : entity.getSync().getId())
-                    .lecture(this.lectureMapper.toData(entity.getLecture()))
+                    .syncId(Hibernate.isInitialized(entity.getSync()) ? entity.getSync().getId() : null)
+                    .lecture(Hibernate.isInitialized(entity.getLecture()) ? this.lectureMapper.toData(entity.getLecture()) : null)
                     .type(SyncDto.Type.getByTypeId(entity.getType()))
                     .details(this.objectMapper.readValue(entity.getDetails(), List.class))
                     .build();
