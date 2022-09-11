@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cybine.stuvapi.relay.data.EntityConversionException;
 import de.cybine.stuvapi.relay.data.EntityMapper;
-import de.cybine.stuvapi.relay.data.lecture.Lecture;
 import de.cybine.stuvapi.relay.data.lecture.LectureMapper;
 import lombok.AllArgsConstructor;
 import org.hibernate.Hibernate;
@@ -28,7 +27,7 @@ public class LectureSyncMapper implements EntityMapper<Sync.LectureSync, SyncDto
             return Sync.LectureSync.builder()
                     .id(data.getId().orElse(null))
                     .sync(data.getSyncId().map(id -> Sync.builder().id(id).build()).orElse(null))
-                    .lecture(Lecture.builder().id(data.getId().orElseThrow()).build())
+                    .lecture(data.getLecture().map(this.lectureMapper::toEntity).orElse(null))
                     .type(data.getType().getTypeId())
                     .details(this.objectMapper.writeValueAsString(data.getDetails()))
                     .build();

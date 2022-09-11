@@ -2,15 +2,18 @@ package de.cybine.stuvapi.relay.data.room;
 
 import de.cybine.stuvapi.relay.data.lecture.Lecture;
 import lombok.*;
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "rooms")
@@ -30,7 +33,23 @@ public class Room
     private String displayName;
 
     @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @ManyToMany(mappedBy = "rooms")
     private Set<Lecture> lectures;
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+            return false;
+        Room room = (Room) o;
+        return id != null && Objects.equals(id, room.id);
+    }
+
+    @Override
+    public int hashCode( )
+    {
+        return getClass().hashCode();
+    }
 }

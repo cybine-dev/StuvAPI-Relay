@@ -107,10 +107,11 @@ public class StuvApiService
 
     private Map<String, Room> persistRooms(Session session, Collection<RoomDto> rooms)
     {
-        List<Room> persistentRooms = session.createQuery("SELECT item FROM Room item", Room.class).getResultList();
+        List<Room> persistentRooms = session.createQuery("SELECT room FROM Room room", Room.class).getResultList();
         List<String> persistentRoomNames = persistentRooms.stream().map(Room::getName).toList();
 
         Set<Room> roomSet = rooms.stream()
+                .distinct()
                 .filter(room -> !persistentRoomNames.contains(room.getName()))
                 .map(this.roomMapper::toEntity)
                 .collect(Collectors.toSet());
