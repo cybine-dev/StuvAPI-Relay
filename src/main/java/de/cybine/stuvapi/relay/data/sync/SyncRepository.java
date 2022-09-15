@@ -34,12 +34,14 @@ public class SyncRepository
 
     public List<SyncDto.LectureSync> getDetailsById(UUID id, int limit, int offset)
     {
+        List<UUID> ids = this.entityManager.createQuery(
+                "SELECT data.id FROM Sync sync JOIN sync.data data WHERE sync.id = :id ORDER BY data.id",
+                UUID.class).setParameter("id", id).setFirstResult(offset).setMaxResults(limit).getResultList();
+
         return this.entityManager.createQuery(
-                        "SELECT DISTINCT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture lecture LEFT JOIN FETCH lecture.rooms WHERE sync.id = :id ORDER BY data.id",
+                        "SELECT DISTINCT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture lecture LEFT JOIN FETCH lecture.rooms WHERE data.id in (:ids) ORDER BY data.id",
                         Sync.LectureSync.class)
-                .setParameter("id", id)
-                .setFirstResult(offset)
-                .setMaxResults(limit)
+                .setParameter("ids", ids)
                 .getResultList()
                 .stream()
                 .map(this.lectureSyncMapper::toData)
