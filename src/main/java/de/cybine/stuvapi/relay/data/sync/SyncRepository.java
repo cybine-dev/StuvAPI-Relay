@@ -35,7 +35,7 @@ public class SyncRepository
     public List<SyncDto.LectureSync> getDetailsById(UUID id, int limit, int offset)
     {
         return this.entityManager.createQuery(
-                        "SELECT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture WHERE sync.id = :id ORDER BY data.id",
+                        "SELECT DISTINCT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture lecture LEFT JOIN FETCH lecture.rooms WHERE sync.id = :id ORDER BY data.id",
                         Sync.LectureSync.class)
                 .setParameter("id", id)
                 .setFirstResult(offset)

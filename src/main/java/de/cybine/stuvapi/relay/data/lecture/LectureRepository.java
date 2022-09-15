@@ -20,14 +20,14 @@ public class LectureRepository
     public List<LectureDto> getAllLectures( )
     {
         return this.entityManager.createQuery(
-                "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE",
+                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE",
                 Lecture.class).getResultList().stream().map(this.lectureMapper::toData).toList();
     }
 
     public List<LectureDto> getAllLectures(String course, ZonedDateTime from, ZonedDateTime until)
     {
         return this.entityManager.createQuery(
-                        "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until)",
+                        "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until)",
                         Lecture.class)
                 .setParameter("course", course)
                 .setParameter("from", from)
@@ -41,7 +41,7 @@ public class LectureRepository
     public Optional<LectureDto> getLectureById(UUID id)
     {
         return this.entityManager.createQuery(
-                "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.id = :id",
+                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.id = :id",
                 Lecture.class).setParameter("id", id).getResultStream().findAny().map(this.lectureMapper::toData);
     }
 }
