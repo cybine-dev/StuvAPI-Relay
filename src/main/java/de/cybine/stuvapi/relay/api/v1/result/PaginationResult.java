@@ -1,11 +1,13 @@
 package de.cybine.stuvapi.relay.api.v1.result;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Collection;
 import java.util.Optional;
 
 @Data
+@Builder(builderClassName = "Builder")
 public class PaginationResult<T>
 {
     private final int total;
@@ -19,6 +21,9 @@ public class PaginationResult<T>
 
     public Optional<String> getNext()
     {
-        return Optional.ofNullable(this.next);
+        if(this.total <= this.limit + this.offset)
+            return Optional.empty();
+
+        return Optional.of(this.next);
     }
 }

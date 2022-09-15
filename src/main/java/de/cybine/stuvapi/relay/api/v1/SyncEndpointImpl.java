@@ -22,31 +22,29 @@ public class SyncEndpointImpl implements SyncEndpoint
     @Override
     public RestResponse<PaginationResult<SyncSummary>> fetchSyncs(UriInfo uriInfo, int limit, int offset)
     {
-        return RestResponse.ok(new PaginationResult<>(((Long) this.syncRepository.getSyncCount()).intValue(),
-                limit,
-                offset,
-                offset + limit >= offset ? null : uriInfo.getRequestUriBuilder()
-                        .replaceQueryParam("offset", offset + limit)
-                        .build()
-                        .toString(),
-                this.syncRepository.getSyncs(limit, offset).stream().map(this::toSummary).toList()));
+        return RestResponse.ok(PaginationResult.<SyncSummary>builder()
+                .total((int) this.syncRepository.getSyncCount())
+                .limit(limit)
+                .offset(offset)
+                .next(uriInfo.getRequestUriBuilder().replaceQueryParam("offset", offset + limit).build().toString())
+                .items(this.syncRepository.getSyncs(limit, offset).stream().map(this::toSummary).toList())
+                .build());
     }
 
     @Override
     public RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UriInfo uriInfo, UUID id, boolean detailed, int limit,
             int offset)
     {
-        return RestResponse.ok(new PaginationResult<>(((Long) this.syncRepository.getDetailCount(id)).intValue(),
-                limit,
-                offset,
-                offset + limit >= offset ? null : uriInfo.getRequestUriBuilder()
-                        .replaceQueryParam("offset", offset + limit)
-                        .build()
-                        .toString(),
-                this.syncRepository.getDetailsById(id, limit, offset)
+        return RestResponse.ok(PaginationResult.<SyncInfo>builder()
+                .total((int) this.syncRepository.getDetailCount(id))
+                .limit(limit)
+                .offset(offset)
+                .next(uriInfo.getRequestUriBuilder().replaceQueryParam("offset", offset + limit).build().toString())
+                .items(this.syncRepository.getDetailsById(id, limit, offset)
                         .stream()
                         .map(data -> this.toInfo(data, detailed))
-                        .toList()));
+                        .toList())
+                .build());
     }
 
     private SyncSummary toSummary(SyncDto data)
