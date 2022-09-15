@@ -8,9 +8,7 @@ import org.jboss.resteasy.reactive.RestResponse;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import java.util.UUID;
 
 @Path("api/v1/sync")
@@ -18,13 +16,13 @@ import java.util.UUID;
 public interface SyncEndpoint
 {
     @GET
-    RestResponse<PaginationResult<SyncSummary>> fetchSyncs(@Context UriInfo uriInfo,
+    RestResponse<PaginationResult<SyncSummary>> fetchSyncs(
             @QueryParam("limit") @Min(1) @Max(50) @DefaultValue("20") int limit,
             @QueryParam("offset") @DefaultValue("0") int offset);
 
     @GET
     @Path("/{id}")
-    RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(@Context UriInfo uriInfo, UUID id,
+    RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UUID id,
             @QueryParam("detailed") @DefaultValue("true") boolean detailed,
             @QueryParam("limit") @Min(1) @Max(50) @DefaultValue("20") int limit,
             @QueryParam("offset") @DefaultValue("0") int offset);
