@@ -85,7 +85,7 @@ public class CalendarService
         event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.getId().orElseThrow()));
         event.setClassification(Classification.public_());
 
-        data.getLecturer().ifPresent(event::setOrganizer);
+        data.getLecturer().filter(lecturer -> !lecturer.isBlank()).ifPresent(event::setOrganizer);
 
         event.setSummary(data.getName());
         event.setLocation(data.getRooms()
