@@ -6,7 +6,9 @@ import biweekly.component.VEvent;
 import biweekly.io.TimezoneAssignment;
 import biweekly.property.Classification;
 import biweekly.property.Method;
+import biweekly.property.Organizer;
 import biweekly.util.Duration;
+import de.cybine.stuvapi.relay.config.ApiServerConfig;
 import de.cybine.stuvapi.relay.data.lecture.LectureDto;
 import de.cybine.stuvapi.relay.data.lecture.LectureRepository;
 import de.cybine.stuvapi.relay.data.room.RoomDto;
@@ -27,12 +29,14 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class CalendarService
 {
+    private final ApiServerConfig serverConfig;
+
     private final LectureRepository lectureRepository;
 
     public String getCalendarFileContent(String course) throws IOException
     {
         Path path = Path.of(String.format("calendar/%s.ics", course.toLowerCase()));
-        if(!Files.exists(path))
+        if (!Files.exists(path))
             throw new FileNotFoundException(path.toString());
 
         return Files.readString(path);
@@ -89,7 +93,9 @@ public class CalendarService
         event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.getId().orElseThrow()));
         event.setClassification(Classification.public_());
 
-        data.getLecturer().filter(lecturer -> !lecturer.isBlank()).ifPresent(event::setOrganizer);
+        data.getLecturer()
+                .map(lecturer -> new Organizer(lecturer, this.serverConfig.email()))
+                .ifPresent(event::setOrganizer);
 
         event.setSummary(data.getName());
         event.setLocation(data.getRooms()

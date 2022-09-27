@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 @Data
 @Schema(name = "Lecture")
@@ -50,7 +51,10 @@ public class LectureDto
 
     public Optional<String> getLecturer( )
     {
-        return Optional.ofNullable(this.lecturer);
+        if (this.lecturer == null || this.lecturer.isBlank())
+            return Optional.empty();
+
+        return Optional.of(this.lecturer);
     }
 
     public Optional<Set<RoomDto>> getRooms( )
@@ -61,8 +65,8 @@ public class LectureDto
     @JsonIgnore
     public boolean isHoliday( )
     {
-        boolean beginsAtEightOClock = this.startsAt.toLocalTime().equals(LocalTime.of(7, 0));
-        boolean endsAtEighteenOClock = this.endsAt.toLocalTime().equals(LocalTime.of(17, 0));
+        boolean beginsAtEightOClock = this.startsAt.toLocalTime().equals(LocalTime.of(8, 0));
+        boolean endsAtEighteenOClock = this.endsAt.toLocalTime().equals(LocalTime.of(18, 0));
 
         return beginsAtEightOClock && endsAtEighteenOClock && this.rooms.isEmpty();
     }
@@ -70,7 +74,10 @@ public class LectureDto
     @JsonIgnore
     public boolean isExam( )
     {
-        return this.name.toLowerCase().startsWith("klausur ");
+        return Pattern.compile(".*(klausur|prüfung).*",
+                        Pattern.CASE_INSENSITIVE | Pattern.DOTALL | Pattern.CANON_EQ | Pattern.UNICODE_CASE)
+                .matcher(this.name)
+                .matches();
     }
 
     @JsonIgnore

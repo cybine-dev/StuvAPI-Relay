@@ -9,5 +9,8 @@ import io.smallrye.config.ConfigMapping;
 public interface ApiServerConfig
 {
     @NotNull
-    String baseUrl();
+    String baseUrl( );
+
+    @NotNull
+    String email( );
 }
