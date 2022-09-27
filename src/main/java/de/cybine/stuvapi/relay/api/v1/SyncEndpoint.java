@@ -3,6 +3,7 @@ package de.cybine.stuvapi.relay.api.v1;
 import de.cybine.stuvapi.relay.api.v1.result.PaginationResult;
 import de.cybine.stuvapi.relay.api.v1.result.SyncInfo;
 import de.cybine.stuvapi.relay.api.v1.result.SyncSummary;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestResponse;
 
 import javax.validation.constraints.Max;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Path("api/v1/sync")
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "Sync Resource", description = "Provides detailed information about lecture changes")
 public interface SyncEndpoint
 {
     @GET

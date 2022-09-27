@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Data
+@Schema(name = "Sync")
 @Builder(builderClassName = "SyncBuilder")
 public class SyncDto
 {
@@ -34,6 +36,7 @@ public class SyncDto
     }
 
     @Data
+    @Schema(name = "LectureSync")
     @Builder(builderClassName = "Builder")
     public static class LectureSync
     {
@@ -63,6 +66,7 @@ public class SyncDto
     }
 
     @Data
+    @Schema(name = "SyncDetail")
     @Builder(builderClassName = "Builder")
     public static class SyncDetail
     {
@@ -75,6 +79,7 @@ public class SyncDto
 
     @Getter
     @AllArgsConstructor
+    @Schema(name = "SyncType")
     public enum Type
     {
         CREATED(1), UPDATED(2), DELETED(3);

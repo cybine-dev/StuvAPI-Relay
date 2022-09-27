@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,9 +29,13 @@ public class CalendarService
 {
     private final LectureRepository lectureRepository;
 
-    public File getCalendarFile(String course)
+    public String getCalendarFileContent(String course) throws IOException
     {
-        return new File(String.format("calendar/%s.ics", course.toLowerCase()));
+        Path path = Path.of(String.format("calendar/%s.ics", course.toLowerCase()));
+        if(!Files.exists(path))
+            throw new FileNotFoundException(path.toString());
+
+        return Files.readString(path);
     }
 
     public void replaceCalendarFiles( ) throws IOException

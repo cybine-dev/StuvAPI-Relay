@@ -5,7 +5,8 @@ import lombok.AllArgsConstructor;
 import org.jboss.resteasy.reactive.RestResponse;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 @ApplicationScoped
 @AllArgsConstructor
@@ -14,12 +15,15 @@ public class CalendarEndpointImpl implements CalendarEndpoint
     private final CalendarService calendarService;
 
     @Override
-    public RestResponse<File> fetchCalendar(String course)
+    public RestResponse<String> fetchCalendar(String course) throws IOException
     {
-        File calendarFile = this.calendarService.getCalendarFile(course);
-        if(!calendarFile.exists())
+        try
+        {
+            return RestResponse.ok(this.calendarService.getCalendarFileContent(course));
+        }
+        catch (FileNotFoundException exception)
+        {
             return RestResponse.notFound();
-
-        return RestResponse.ok(calendarFile);
+        }
     }
 }

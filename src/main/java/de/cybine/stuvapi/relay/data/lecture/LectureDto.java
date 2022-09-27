@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -15,6 +16,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Data
+@Schema(name = "Lecture")
 @Builder(builderClassName = "Builder")
 public class LectureDto
 {
@@ -79,6 +81,7 @@ public class LectureDto
 
     @Getter
     @AllArgsConstructor
+    @Schema(name = "LectureType")
     public enum Type
     {
         ONLINE(1), PRESENCE(2), HYBRID(3);

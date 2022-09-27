@@ -1,6 +1,7 @@
 package de.cybine.stuvapi.relay.api.v1;
 
 import de.cybine.stuvapi.relay.data.lecture.LectureDto;
+import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.resteasy.reactive.RestQuery;
 
 import javax.ws.rs.GET;
@@ -13,6 +14,7 @@ import java.util.UUID;
 
 @Path("api/v1/lecture")
 @Produces(MediaType.APPLICATION_JSON)
+@Tag(name = "Lecture", description = "Provides information about lectures")
 public interface LectureEndpoint
 {
     @GET
