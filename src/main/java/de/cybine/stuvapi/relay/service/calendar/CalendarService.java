@@ -82,6 +82,11 @@ public class CalendarService
         calendar.setProductId(String.format("-//Cybine//StuvAPI-Relay v%s//DE",
                 version == null ? "DEVELOPMENT" : version));
 
+        calendar.setLastModified(this.transformLocalDateTime(lectures.stream()
+                .map(LectureDto::getUpdatedAt)
+                .max(ZonedDateTime::compareTo)
+                .orElse(ZonedDateTime.now())));
+
         lectures.stream().map(this::getEvent).forEach(calendar::addEvent);
 
         return calendar;
@@ -93,11 +98,13 @@ public class CalendarService
         event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.getId().orElseThrow()));
         event.setClassification(Classification.public_());
 
+        event.setOrganizer(new Organizer(this.serverConfig.serviceName(), this.serverConfig.email()));
         data.getLecturer()
                 .map(lecturer -> new Organizer(lecturer, this.serverConfig.email()))
                 .ifPresent(event::setOrganizer);
 
         event.setSummary(data.getName());
+        event.addCategories(this.getEventCategories(data));
         event.setLocation(data.getRooms()
                 .orElseThrow()
                 .stream()
@@ -105,29 +112,34 @@ public class CalendarService
                 .collect(Collectors.joining("; ")));
 
         event.setCreated(this.transformLocalDateTime(data.getCreatedAt()));
-        event.setLastModified(this.transformLocalDateTime(data.getUpdatedAt()));
         event.setDateStart(this.transformLocalDateTime(data.getStartsAt()), true);
         event.setDateEnd(this.transformLocalDateTime(data.getEndsAt()), true);
 
+        return event;
+    }
+
+    private List<String> getEventCategories(LectureDto data)
+    {
+        List<String> categories = new ArrayList<>();
         if (data.isExam())
-            event.addCategories(CalendarCategories.EXAM.getDisplayName());
+            categories.add(CalendarCategories.EXAM.getDisplayName());
 
         if (data.isHoliday())
-            event.addCategories(CalendarCategories.HOLIDAY.getDisplayName());
+            categories.add(CalendarCategories.HOLIDAY.getDisplayName());
 
         if (data.isRegularLecture())
         {
-            event.addCategories(data.getName());
-            event.addCategories(CalendarCategories.LECTURE.getDisplayName());
+            categories.add(data.getName());
+            categories.add(CalendarCategories.LECTURE.getDisplayName());
             switch (data.getType())
             {
-                case ONLINE -> event.addCategories(CalendarCategories.ONLINE.getDisplayName());
-                case PRESENCE -> event.addCategories(CalendarCategories.PRESENCE.getDisplayName());
-                case HYBRID -> event.addCategories(CalendarCategories.HYBRID.getDisplayName());
+                case ONLINE -> categories.add(CalendarCategories.ONLINE.getDisplayName());
+                case PRESENCE -> categories.add(CalendarCategories.PRESENCE.getDisplayName());
+                case HYBRID -> categories.add(CalendarCategories.HYBRID.getDisplayName());
             }
         }
 
-        return event;
+        return categories;
     }
 
     private Date transformLocalDateTime(ZonedDateTime dateTime)

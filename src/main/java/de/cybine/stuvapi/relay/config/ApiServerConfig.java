@@ -13,4 +13,7 @@ public interface ApiServerConfig
 
     @NotNull
     String email( );
+
+    @NotNull
+    String serviceName( );
 }
