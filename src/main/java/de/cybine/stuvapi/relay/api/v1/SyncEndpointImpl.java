@@ -40,21 +40,24 @@ public class SyncEndpointImpl implements SyncEndpoint
     }
 
     @Override
-    public RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UUID id, boolean detailed, int limit,
+    public RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UUID id, String course, boolean detailed, int limit,
             int offset)
     {
+        UriBuilder builder = UriBuilder.fromUri(this.apiServerConfig.baseUrl())
+                .path(String.format("/api/v1/sync/%s", id))
+                .queryParam("limit", limit)
+                .queryParam("offset", offset + limit)
+                .queryParam("detailed", detailed);
+
+        if (course != null)
+            builder.queryParam("course", course);
+
         return RestResponse.ok(PaginationResult.<SyncInfo>builder()
-                .total((int) this.syncRepository.getDetailCount(id))
+                .total((int) this.syncRepository.getDetailCount(id, course))
                 .limit(limit)
                 .offset(offset)
-                .next(UriBuilder.fromUri(this.apiServerConfig.baseUrl())
-                        .path(String.format("/api/v1/sync/%s", id))
-                        .queryParam("detailed", detailed)
-                        .queryParam("limit", limit)
-                        .queryParam("offset", offset + limit)
-                        .build()
-                        .toString())
-                .items(this.syncRepository.getDetailsById(id, limit, offset)
+                .next(builder.build().toString())
+                .items(this.syncRepository.getDetailsById(id, course, limit, offset)
                         .stream()
                         .map(data -> this.toInfo(data, detailed))
                         .toList())

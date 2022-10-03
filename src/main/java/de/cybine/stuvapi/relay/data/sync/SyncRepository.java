@@ -32,11 +32,16 @@ public class SyncRepository
         return this.entityManager.createQuery("SELECT COUNT(sync) FROM Sync sync", Long.class).getSingleResult();
     }
 
-    public List<SyncDto.LectureSync> getDetailsById(UUID id, int limit, int offset)
+    public List<SyncDto.LectureSync> getDetailsById(UUID id, String course, int limit, int offset)
     {
         List<UUID> ids = this.entityManager.createQuery(
-                "SELECT data.id FROM Sync sync JOIN sync.data data WHERE sync.id = :id ORDER BY data.id",
-                UUID.class).setParameter("id", id).setFirstResult(offset).setMaxResults(limit).getResultList();
+                        "SELECT data.id FROM Sync sync JOIN sync.data data WHERE sync.id = :id AND (:course IS NULL OR data.lecture.course = :course) ORDER BY data.id",
+                        UUID.class)
+                .setParameter("id", id)
+                .setParameter("course", course)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
 
         return this.entityManager.createQuery(
                         "SELECT DISTINCT data FROM Sync sync JOIN sync.data data LEFT JOIN FETCH data.lecture lecture LEFT JOIN FETCH lecture.rooms WHERE data.id in (:ids) ORDER BY data.id",
@@ -48,10 +53,10 @@ public class SyncRepository
                 .toList();
     }
 
-    public long getDetailCount(UUID id)
+    public long getDetailCount(UUID id, String course)
     {
         return this.entityManager.createQuery(
-                "SELECT COUNT(data) FROM Sync sync JOIN sync.data data WHERE sync.id = :id",
-                Long.class).setParameter("id", id).getSingleResult();
+                "SELECT COUNT(data) FROM Sync sync JOIN sync.data data WHERE sync.id = :id AND (:course IS NULL OR data.lecture.course = :course)",
+                Long.class).setParameter("course", course).setParameter("id", id).getSingleResult();
     }
 }

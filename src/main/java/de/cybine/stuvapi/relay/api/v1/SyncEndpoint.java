@@ -24,7 +24,7 @@ public interface SyncEndpoint
 
     @GET
     @Path("/{id}")
-    RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UUID id,
+    RestResponse<PaginationResult<SyncInfo>> fetchSyncInfo(UUID id, @QueryParam("course") String course,
             @QueryParam("detailed") @DefaultValue("true") boolean detailed,
             @QueryParam("limit") @Min(1) @Max(50) @DefaultValue("20") int limit,
             @QueryParam("offset") @DefaultValue("0") int offset);
