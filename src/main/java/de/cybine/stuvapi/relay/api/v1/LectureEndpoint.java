@@ -8,7 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 public interface LectureEndpoint
 {
     @GET
-    Collection<LectureDto> fetchAll(@RestQuery LocalDateTime from, @RestQuery LocalDateTime until,
+    Collection<LectureDto> fetchAll(@RestQuery ZonedDateTime from, @RestQuery ZonedDateTime until,
             @RestQuery String course);
 
     @GET
