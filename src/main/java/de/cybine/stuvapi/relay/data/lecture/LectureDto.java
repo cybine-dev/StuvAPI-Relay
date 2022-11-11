@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.Getter;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
-import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
@@ -65,10 +65,7 @@ public class LectureDto
     @JsonIgnore
     public boolean isHoliday( )
     {
-        boolean beginsAtEightOClock = this.startsAt.toLocalTime().equals(LocalTime.of(8, 0));
-        boolean endsAtEighteenOClock = this.endsAt.toLocalTime().equals(LocalTime.of(18, 0));
-
-        return beginsAtEightOClock && endsAtEighteenOClock && this.rooms.isEmpty();
+        return this.startsAt.until(this.endsAt, ChronoUnit.HOURS) >= 10 && this.rooms.isEmpty();
     }
 
     @JsonIgnore
