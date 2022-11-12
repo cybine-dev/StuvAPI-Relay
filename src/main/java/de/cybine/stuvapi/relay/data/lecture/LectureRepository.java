@@ -20,14 +20,14 @@ public class LectureRepository
     public List<LectureDto> getAllLectures( )
     {
         return this.entityManager.createQuery(
-                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE",
+                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE ORDER BY lecture.startsAt",
                 Lecture.class).getResultList().stream().map(this.lectureMapper::toData).toList();
     }
 
     public List<LectureDto> getAllLectures(String course, ZonedDateTime from, ZonedDateTime until)
     {
         return this.entityManager.createQuery(
-                        "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until)",
+                        "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until) ORDER BY lecture.startsAt",
                         Lecture.class)
                 .setParameter("course", course)
                 .setParameter("from", from)
