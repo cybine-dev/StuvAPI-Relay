@@ -35,7 +35,7 @@ public class CalendarService
 
     public String getCalendarFileContent(String course) throws IOException
     {
-        Path path = Path.of(String.format("calendar/%s.ics", course.toLowerCase()));
+        Path path = Path.of(String.format("calendar/%s.ics", course.toLowerCase().replace("/", "-")));
         if (!Files.exists(path))
             throw new FileNotFoundException(path.toString());
 
