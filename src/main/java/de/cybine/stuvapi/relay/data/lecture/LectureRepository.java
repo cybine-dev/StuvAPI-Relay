@@ -1,13 +1,12 @@
 package de.cybine.stuvapi.relay.data.lecture;
 
-import lombok.AllArgsConstructor;
+import de.cybine.stuvapi.relay.exception.api.*;
+import jakarta.enterprise.context.*;
+import jakarta.persistence.*;
+import lombok.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.persistence.EntityManager;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.*;
+import java.util.*;
 
 @ApplicationScoped
 @AllArgsConstructor
@@ -15,33 +14,34 @@ public class LectureRepository
 {
     private final EntityManager entityManager;
 
-    private final LectureMapper lectureMapper;
-
-    public List<LectureDto> getAllLectures( )
+    public List<LectureEntity> getAllLectures( )
     {
         return this.entityManager.createQuery(
-                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE ORDER BY lecture.startsAt",
-                Lecture.class).getResultList().stream().map(this.lectureMapper::toData).toList();
+                "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.status <> " +
+                        "'ARCHIVED'" + " ORDER BY lecture.startsAt",
+                LectureEntity.class).getResultList();
     }
 
-    public List<LectureDto> getAllLectures(String course, ZonedDateTime from, ZonedDateTime until)
+    public List<LectureEntity> getAllLectures(String course, ZonedDateTime from, ZonedDateTime until)
     {
         return this.entityManager.createQuery(
-                        "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.isArchived IS FALSE AND (:course IS NULL OR lecture.course LIKE :course) AND (:from IS NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture.startsAt <= :until) ORDER BY lecture.startsAt",
-                        Lecture.class)
-                .setParameter("course", course)
-                .setParameter("from", from)
-                .setParameter("until", until)
-                .getResultList()
-                .stream()
-                .map(this.lectureMapper::toData)
-                .toList();
+                           "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.status " + "<>" + " 'ARCHIVED' AND (:course IS NULL OR lecture.course LIKE :course) AND " + "(:from IS " + "NULL OR lecture.endsAt >= :from) AND (:until IS NULL OR lecture" + ".startsAt <= " + ":until) ORDER BY lecture.startsAt",
+                           LectureEntity.class)
+                                 .setParameter("course", course)
+                                 .setParameter("from", from)
+                                 .setParameter("until", until)
+                                 .getResultList();
     }
 
-    public Optional<LectureDto> getLectureById(UUID id)
+    public Optional<LectureEntity> getLectureById(LectureId id)
     {
         return this.entityManager.createQuery(
-                "SELECT DISTINCT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.id = :id",
-                Lecture.class).setParameter("id", id).getResultStream().findAny().map(this.lectureMapper::toData);
+                "SELECT lecture FROM Lecture lecture LEFT JOIN FETCH lecture.rooms WHERE lecture.id = :id",
+                LectureEntity.class).setParameter("id", id.getValue()).getResultStream().findAny();
+    }
+
+    public Set<LectureEntity> fetchByLectureIds(List<Long> lectureIds)
+    {
+        throw new NotImplementedException();
     }
 }

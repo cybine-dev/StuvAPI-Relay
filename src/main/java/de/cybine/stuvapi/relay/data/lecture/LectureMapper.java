@@ -1,57 +1,52 @@
 package de.cybine.stuvapi.relay.data.lecture;
 
-import de.cybine.stuvapi.relay.data.EntityMapper;
-import de.cybine.stuvapi.relay.data.room.RoomMapper;
-import lombok.AllArgsConstructor;
-import org.hibernate.Hibernate;
+import de.cybine.stuvapi.relay.data.room.*;
+import de.cybine.stuvapi.relay.data.util.primitive.*;
+import de.cybine.stuvapi.relay.util.converter.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.util.stream.Collectors;
-
-@ApplicationScoped
-@AllArgsConstructor
-public class LectureMapper implements EntityMapper<Lecture, LectureDto>
+public class LectureMapper implements EntityMapper<LectureEntity, Lecture>
 {
-    private final RoomMapper roomMapper;
-
-    public Lecture toEntity(LectureDto data)
+    @Override
+    public Class<LectureEntity> getEntityType( )
     {
-        return Lecture.builder()
-                .id(data.getId().orElse(null))
-                .lectureId(data.getLectureId())
-                .name(data.getName())
-                .course(data.getCourse().orElse(null))
-                .lecturer(data.getLecturer().orElse(null))
-                .type(data.getType().getTypeId())
-                .isArchived(data.isArchived())
-                .createdAt(data.getCreatedAt())
-                .updatedAt(data.getUpdatedAt())
-                .startsAt(data.getStartsAt())
-                .endsAt(data.getEndsAt())
-                .rooms(data.getRooms()
-                        .map(rooms -> rooms.stream().map(this.roomMapper::toEntity).collect(Collectors.toSet()))
-                        .orElse(null))
-                .build();
+        return LectureEntity.class;
     }
 
-    public LectureDto toData(Lecture entity)
+    @Override
+    public Class<Lecture> getDataType( )
     {
-        return LectureDto.builder()
-                .id(entity.getId())
-                .lectureId(entity.getLectureId())
-                .name(entity.getName())
-                .course(entity.getCourse())
-                .lecturer(entity.getLecturer())
-                .type(LectureDto.Type.getByTypeId(entity.getType()))
-                .isArchived(entity.isArchived())
-                .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
-                .startsAt(entity.getStartsAt())
-                .endsAt(entity.getEndsAt())
-                .rooms(Hibernate.isInitialized(entity.getRooms()) ? entity.getRooms()
-                        .stream()
-                        .map(this.roomMapper::toData)
-                        .collect(Collectors.toSet()) : null)
-                .build();
+        return Lecture.class;
+    }
+
+    @Override
+    public LectureEntity toEntity(Lecture data, ConversionHelper helper)
+    {
+        return LectureEntity.builder()
+                            .id(data.findId().map(Id::getValue).orElse(null))
+                            .lectureId(data.getLectureId())
+                            .name(data.getName())
+                            .course(data.getCourse().orElse(null))
+                            .startsAt(data.getStartsAt())
+                            .endsAt(data.getEndsAt())
+                            .type(data.getType())
+                            .status(data.getStatus())
+                            .rooms(helper.toSet(Room.class, RoomEntity.class).map(data::getRooms))
+                            .build();
+    }
+
+    @Override
+    public Lecture toData(LectureEntity entity, ConversionHelper helper)
+    {
+        return Lecture.builder()
+                      .id(LectureId.of(entity.getId()))
+                      .lectureId(entity.getLectureId())
+                      .name(entity.getName())
+                      .course(entity.getCourse().orElse(null))
+                      .startsAt(entity.getStartsAt())
+                      .endsAt(entity.getEndsAt())
+                      .type(entity.getType())
+                      .status(entity.getStatus())
+                      .rooms(helper.toSet(RoomEntity.class, Room.class).map(entity::getRooms))
+                      .build();
     }
 }

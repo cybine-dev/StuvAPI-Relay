@@ -1,55 +1,75 @@
 package de.cybine.stuvapi.relay.data.room;
 
-import de.cybine.stuvapi.relay.data.lecture.Lecture;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.*;
+import de.cybine.stuvapi.relay.data.lecture.*;
+import de.cybine.stuvapi.relay.util.*;
 import lombok.*;
-import org.hibernate.Hibernate;
-import org.hibernate.annotations.GenericGenerator;
+import lombok.extern.jackson.*;
 
-import javax.persistence.*;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.io.*;
+import java.util.*;
+import java.util.stream.*;
 
-@Getter
-@Setter
-@Entity
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@Table(name = "rooms")
-@Builder(builderClassName = "Builder")
-public class Room
+@Data
+@Jacksonized
+@Builder(builderClassName = "Generator")
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class Room implements Serializable, WithId<RoomId>
 {
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @Column(name = "id", nullable = false, unique = true)
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    private UUID id;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
-    @Column(name = "name", nullable = false, unique = true)
-    private String name;
+    @JsonProperty("id")
+    @JsonDeserialize(using = RoomId.Deserializer.class)
+    private final RoomId id;
 
-    @Column(name = "display_name")
-    private String displayName;
+    @JsonProperty("name")
+    private final String name;
 
-    @ToString.Exclude
-    @ManyToMany(mappedBy = "rooms")
-    private Set<Lecture> lectures;
+    @JsonProperty("display_name")
+    private final String displayName;
+
+    @JsonProperty("lectures")
+    @JsonView(Views.Extended.class)
+    private final Set<Lecture> lectures;
+
+    public String getDisplayName( )
+    {
+        return this.displayName == null ? this.name : this.displayName;
+    }
+
+    public Optional<Set<Lecture>> getLectures( )
+    {
+        return Optional.ofNullable(this.lectures);
+    }
+
+    @JsonProperty("lecture_ids")
+    @JsonView(Views.Simple.class)
+    public Optional<Set<LectureId>> getLectureIds( )
+    {
+        return this.getLectures().map(items -> items.stream().map(WithId::getId).collect(Collectors.toSet()));
+    }
 
     @Override
-    public boolean equals(Object o)
+    public boolean equals(Object other)
     {
-        if (this == o)
-            return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o))
+        if (other == null)
             return false;
-        Room room = (Room) o;
-        return id != null && Objects.equals(id, room.id);
+
+        if (this.getClass() != other.getClass())
+            return false;
+
+        WithId<?> that = ((WithId<?>) other);
+        if (this.findId().isEmpty() || that.findId().isEmpty())
+            return false;
+
+        return Objects.equals(this.getId(), that.getId());
     }
 
     @Override
     public int hashCode( )
     {
-        return getClass().hashCode();
+        return this.findId().map(Object::hashCode).orElse(0);
     }
 }

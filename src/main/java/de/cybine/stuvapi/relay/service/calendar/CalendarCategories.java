@@ -1,7 +1,6 @@
 package de.cybine.stuvapi.relay.service.calendar;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="v1.0.0-lecture-setup" author="f.boelter">
+        <createTable tableName="rooms">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="display_name" type="VARCHAR(255)"/>
+        </createTable>
+        <createTable tableName="lectures">
+            <column name="id" type="BINARY(16)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="lecture_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="starts_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ends_at" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="course" type="VARCHAR(64)"/>
+        </createTable>
+        <createTable tableName="lecture_room_relation">
+            <column name="lecture_id" type="BINARY(16)">
+                <constraints primaryKey="true" references="lectures(id)"
+                             foreignKeyName="lecture_rooms_fk-lecture-id" deleteCascade="true"/>
+            </column>
+            <column name="room_id" type="BINARY(16)">
+                <constraints primaryKey="true" references="rooms(id)"
+                             foreignKeyName="lecture_rooms_fk-room-id" deleteCascade="true"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="rooms" indexName="rooms-name" unique="true">
+            <column name="name"/>
+        </createIndex>
+        <createIndex tableName="lectures" indexName="lectures-lecture_id" unique="true">
+            <column name="lecture_id"/>
+        </createIndex>
+
+        <insert tableName="action_metadata">
+            <column name="id">UUID()</column>
+            <column name="namespace">stuvapi-relay</column>
+            <column name="category">lecture</column>
+            <column name="name">sync</column>
+            <column name="type">ACTION</column>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

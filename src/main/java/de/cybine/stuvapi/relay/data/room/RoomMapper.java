@@ -1,27 +1,44 @@
 package de.cybine.stuvapi.relay.data.room;
 
-import de.cybine.stuvapi.relay.data.EntityMapper;
-import lombok.AllArgsConstructor;
+import de.cybine.stuvapi.relay.data.lecture.*;
+import de.cybine.stuvapi.relay.data.util.primitive.*;
+import de.cybine.stuvapi.relay.util.converter.*;
 
-import javax.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
-@AllArgsConstructor
-public class RoomMapper implements EntityMapper<Room, RoomDto>
+public class RoomMapper implements EntityMapper<RoomEntity, Room>
 {
     @Override
-    public Room toEntity(RoomDto data)
+    public Class<RoomEntity> getEntityType( )
     {
-        return Room.builder()
-                .id(data.getId().orElse(null))
-                .name(data.getName())
-                .displayName(data.getDisplayName().equals(data.getName()) ? null : data.getDisplayName())
-                .build();
+        return RoomEntity.class;
     }
 
     @Override
-    public RoomDto toData(Room entity)
+    public Class<Room> getDataType( )
     {
-        return RoomDto.builder().id(entity.getId()).name(entity.getName()).displayName(entity.getDisplayName()).build();
+        return Room.class;
+    }
+
+    @Override
+    public RoomEntity toEntity(Room data, ConversionHelper helper)
+    {
+        return RoomEntity.builder()
+                         .id(data.findId().map(Id::getValue).orElse(null))
+                         .name(data.getName())
+                         .displayName(helper.optional(data::getDisplayName)
+                                            .filter(item -> !item.equals(data.getName()))
+                                            .orElse(null))
+                         .lectures(helper.toSet(Lecture.class, LectureEntity.class).map(data::getLectures))
+                         .build();
+    }
+
+    @Override
+    public Room toData(RoomEntity entity, ConversionHelper helper)
+    {
+        return Room.builder()
+                   .id(RoomId.of(entity.getId()))
+                   .name(entity.getName())
+                   .displayName(entity.getDisplayName().orElse(null))
+                   .lectures(helper.toSet(LectureEntity.class, Lecture.class).map(entity::getLectures))
+                   .build();
     }
 }

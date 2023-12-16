@@ -1,37 +1,36 @@
 package de.cybine.stuvapi.relay.service.calendar;
 
-import biweekly.ICalVersion;
-import biweekly.ICalendar;
-import biweekly.component.VEvent;
-import biweekly.io.TimezoneAssignment;
-import biweekly.property.Classification;
-import biweekly.property.Method;
-import biweekly.property.Organizer;
+import biweekly.*;
+import biweekly.component.*;
+import biweekly.io.*;
+import biweekly.property.*;
 import biweekly.util.Duration;
-import de.cybine.stuvapi.relay.config.ApiServerConfig;
-import de.cybine.stuvapi.relay.data.lecture.LectureDto;
-import de.cybine.stuvapi.relay.data.lecture.LectureRepository;
-import de.cybine.stuvapi.relay.data.room.RoomDto;
-import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import de.cybine.stuvapi.relay.config.*;
+import de.cybine.stuvapi.relay.data.lecture.*;
+import de.cybine.stuvapi.relay.data.room.*;
+import de.cybine.stuvapi.relay.data.util.primitive.*;
+import de.cybine.stuvapi.relay.util.datasource.*;
+import jakarta.ejb.*;
+import jakarta.enterprise.context.*;
+import lombok.*;
+import lombok.extern.log4j.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
+import java.io.*;
+import java.nio.file.*;
+import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 @Log4j2
+@Startup
 @ApplicationScoped
 @AllArgsConstructor
 public class CalendarService
 {
-    private final ApiServerConfig serverConfig;
+    private final ApplicationConfig applicationConfig;
 
-    private final LectureRepository lectureRepository;
+    private final GenericDatasourceService<LectureEntity, Lecture> lectureService = GenericDatasourceService.forType(
+            LectureEntity.class, Lecture.class);
 
     public String getCalendarFileContent(String course) throws IOException
     {
@@ -51,12 +50,18 @@ public class CalendarService
             log.info("Folder for iCalendar files created. Path: {}", folderPath.toAbsolutePath().toString());
         }
 
-        Map<String, List<LectureDto>> courseLectures = new HashMap<>();
-        for (LectureDto data : this.lectureRepository.getAllLectures())
-            courseLectures.computeIfAbsent(data.getCourse().orElse("common"), id -> new ArrayList<>()).add(data);
+        DatasourceQuery query = DatasourceQuery.builder()
+                                               .relation(DatasourceHelper.fetch(LectureEntity_.ROOMS))
+                                               .build();
+
+        List<Lecture> lectures = this.lectureService.fetch(query);
+        Map<String, List<Lecture>> courseLectures = new HashMap<>();
+        for (Lecture data : lectures)
+            courseLectures.computeIfAbsent(data.getCourse().orElse("common").replace("/", "-"), id -> new ArrayList<>())
+                          .add(data);
 
         log.info("Updating {} iCalendar files", courseLectures.size());
-        for (Map.Entry<String, List<LectureDto>> entry : courseLectures.entrySet())
+        for (Map.Entry<String, List<Lecture>> entry : courseLectures.entrySet())
         {
             Path path = Path.of(folderPath.toString(), String.format("%s.ics", entry.getKey().toLowerCase()));
             if (!Files.exists(path))
@@ -68,7 +73,7 @@ public class CalendarService
         }
     }
 
-    private ICalendar getCalendar(String course, List<LectureDto> lectures)
+    private ICalendar getCalendar(String course, List<Lecture> lectures)
     {
         ICalendar calendar = new ICalendar();
         calendar.getTimezoneInfo().setDefaultTimezone(TimezoneAssignment.download(TimeZone.getDefault(), true));
@@ -77,48 +82,39 @@ public class CalendarService
         calendar.setMethod(Method.publish());
         calendar.setName(course);
         calendar.setDescription(String.format("Vorlesungsplan %s", course));
+        calendar.setLastModified(this.transformLocalDateTime(ZonedDateTime.now()));
 
         String version = this.getClass().getPackage().getImplementationVersion();
-        calendar.setProductId(String.format("-//Cybine//StuvAPI-Relay v%s//DE",
-                version == null ? "DEVELOPMENT" : version));
-
-        calendar.setLastModified(this.transformLocalDateTime(lectures.stream()
-                .map(LectureDto::getUpdatedAt)
-                .max(ZonedDateTime::compareTo)
-                .orElse(ZonedDateTime.now())));
+        calendar.setProductId(
+                String.format("-//Cybine//StuvAPI-Relay v%s//DE", version == null ? "DEVELOPMENT" : version));
 
         lectures.stream().map(this::getEvent).forEach(calendar::addEvent);
 
         return calendar;
     }
 
-    private VEvent getEvent(LectureDto data)
+    private VEvent getEvent(Lecture data)
     {
         VEvent event = new VEvent();
-        event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.getId().orElseThrow()));
+        event.setUid(String.format("%s@stuvapi-relay.cybine.de", data.findId().map(Id::getValue).orElseThrow()));
         event.setClassification(Classification.public_());
 
-        event.setOrganizer(new Organizer(this.serverConfig.serviceName(), this.serverConfig.email()));
-        data.getLecturer()
-                .map(lecturer -> new Organizer(lecturer, this.serverConfig.email()))
-                .ifPresent(event::setOrganizer);
-
+        event.setOrganizer(new Organizer(this.applicationConfig.serviceName(), this.applicationConfig.email()));
         event.setSummary(data.getName());
         event.addCategories(this.getEventCategories(data));
         event.setLocation(data.getRooms()
-                .orElseThrow()
-                .stream()
-                .map(RoomDto::getDisplayName)
-                .collect(Collectors.joining("; ")));
+                              .orElse(Collections.emptySet())
+                              .stream()
+                              .map(Room::getDisplayName)
+                              .collect(Collectors.joining("; ")));
 
-        event.setCreated(this.transformLocalDateTime(data.getCreatedAt()));
         event.setDateStart(this.transformLocalDateTime(data.getStartsAt()), true);
         event.setDateEnd(this.transformLocalDateTime(data.getEndsAt()), true);
 
         return event;
     }
 
-    private List<String> getEventCategories(LectureDto data)
+    private List<String> getEventCategories(Lecture data)
     {
         List<String> categories = new ArrayList<>();
         if (data.isExam())

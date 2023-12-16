@@ -1,31 +1,20 @@
 package de.cybine.stuvapi.relay.service.stuv;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.cybine.stuvapi.relay.config.StuvApiConfig;
-import de.cybine.stuvapi.relay.data.lecture.LectureDto;
-import de.cybine.stuvapi.relay.data.room.RoomDto;
-import de.cybine.stuvapi.relay.exception.StuvApiFetchException;
-import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.*;
+import de.cybine.stuvapi.relay.config.*;
+import de.cybine.stuvapi.relay.data.lecture.*;
+import de.cybine.stuvapi.relay.exception.*;
+import jakarta.enterprise.context.*;
+import lombok.*;
+import lombok.extern.log4j.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.io.*;
+import java.net.*;
+import java.net.http.*;
+import java.nio.charset.*;
+import java.util.*;
+import java.util.function.*;
 
 @Log4j2
 @ApplicationScoped
@@ -39,75 +28,63 @@ public class StuvApi
     /**
      * Fetches lectures from StuvAPI
      *
-     * @param includeArchived if past lectures should be included
+     * @param includeArchived
+     *         if past lectures should be included
      *
      * @return list of fetched lectures
      *
-     * @throws StuvApiFetchException indicates error during data retrieval
-     * @throws InterruptedException  indicates request interruption
+     * @throws StuvApiFetchException
+     *         indicates error during data retrieval
+     * @throws InterruptedException
+     *         indicates request interruption
      */
-    public List<LectureDto> fetchLectures(boolean includeArchived)
+    public List<LectureData> fetchLectures(boolean includeArchived)
             throws StuvApiFetchException, InterruptedException, JsonProcessingException
     {
-        URI uri = URI.create(String.format("%s/%s?archived=%s",
-                this.config.baseUrl(),
-                "rapla/lectures",
-                includeArchived));
-
-        String response = this.performRequest(uri).body();
-        List<?> responseData = this.objectMapper.readValue(response, List.class);
-
-        return this.parseLectureData(responseData);
+        return this.fetchLectures(includeArchived, item -> true);
     }
 
     /**
-     * Parses result data to retrieve lectures
+     * Fetches lectures from StuvAPI
      *
-     * @param data data to be parsed
+     * @param includeArchived
+     *         if past lectures should be included
+     * @param filter
+     *         additional filter
      *
-     * @return list of parsed lectures
+     * @return list of fetched lectures
+     *
+     * @throws StuvApiFetchException
+     *         indicates error during data retrieval
+     * @throws InterruptedException
+     *         indicates request interruption
      */
-    @SuppressWarnings("unchecked")
-    private List<LectureDto> parseLectureData(List<?> data)
+    public List<LectureData> fetchLectures(boolean includeArchived, Predicate<LectureData> filter)
+            throws StuvApiFetchException, InterruptedException, JsonProcessingException
     {
-        List<LectureDto> lectures = new ArrayList<>();
-        for (Object obj : data)
-        {
-            Map<String, Object> lectureData = (Map<String, Object>) obj;
-            LectureDto lecture = LectureDto.builder()
-                    .lectureId(((Integer) lectureData.get("id")).longValue())
-                    .name((String) lectureData.get("name"))
-                    .course((String) lectureData.get("course"))
-                    .lecturer((String) lectureData.get("lecturer"))
-                    .type(LectureDto.Type.valueOf((String) lectureData.get("type")))
-                    .createdAt(ZonedDateTime.now())
-                    .updatedAt(ZonedDateTime.now())
-                    .startsAt(OffsetDateTime.parse((String) lectureData.get("startTime"),
-                            DateTimeFormatter.ISO_DATE_TIME).atZoneSameInstant(ZoneId.systemDefault()))
-                    .endsAt(OffsetDateTime.parse((String) lectureData.get("endTime"), DateTimeFormatter.ISO_DATE_TIME)
-                            .atZoneSameInstant(ZoneId.systemDefault()))
-                    .rooms(((List<?>) lectureData.getOrDefault("rooms", Collections.emptyList())).stream()
-                            .map(Object::toString)
-                            .map(RoomDto.builder()::name)
-                            .map(RoomDto.Builder::build)
-                            .collect(Collectors.toSet()))
-                    .build();
+        URI uri = URI.create(
+                String.format("%s/%s?archived=%s", this.config.baseUrl(), "rapla/lectures", includeArchived));
 
-            lectures.add(lecture);
-        }
+        String response = this.performRequest(uri).body();
 
-        return lectures;
+        JavaType type = this.objectMapper.getTypeFactory().constructParametricType(List.class, LectureData.class);
+        List<LectureData> responseData = this.objectMapper.readValue(response, type);
+
+        return responseData.stream().filter(filter).toList();
     }
 
     /**
      * Performs http request
      *
-     * @param uri request location
+     * @param uri
+     *         request location
      *
      * @return http request result
      *
-     * @throws StuvApiFetchException indicates error during data retrieval
-     * @throws InterruptedException  indicates request interruption
+     * @throws StuvApiFetchException
+     *         indicates error during data retrieval
+     * @throws InterruptedException
+     *         indicates request interruption
      */
     private HttpResponse<String> performRequest(URI uri) throws StuvApiFetchException, InterruptedException
     {
@@ -120,9 +97,9 @@ public class StuvApi
 
             if (response.statusCode() != HttpURLConnection.HTTP_OK)
             {
-                throw new StuvApiFetchException(String.format("Could not query %s: Received invalid status code %s!",
-                        uri,
-                        response.statusCode()));
+                throw new StuvApiFetchException(
+                        String.format("Could not query %s: Received invalid status code %s!", uri,
+                                response.statusCode()));
             }
 
             return response;

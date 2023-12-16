@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'io.quarkus'
+    id 'io.freefair.lombok' version "8.2.2"
 }
 
 repositories {
@@ -10,31 +11,29 @@ repositories {
 
 dependencies {
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
-    implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
-    implementation 'io.quarkus:quarkus-hibernate-orm'
-    implementation 'io.quarkus:quarkus-rest-client-reactive'
-    implementation 'io.quarkus:quarkus-resteasy-reactive'
-    implementation 'io.quarkus:quarkus-jdbc-mariadb'
-    implementation 'io.quarkus:quarkus-smallrye-health'
-    implementation 'io.quarkus:quarkus-rest-client-reactive-jackson'
-    implementation 'io.quarkus:quarkus-smallrye-openapi'
-    implementation 'io.quarkus:quarkus-quartz'
-    implementation 'io.quarkus:quarkus-jackson'
-    implementation 'io.quarkus:quarkus-liquibase'
     implementation 'io.quarkus:quarkus-arc'
+    implementation 'io.quarkus:quarkus-hibernate-orm'
+    implementation 'io.quarkus:quarkus-hibernate-validator'
+    implementation 'io.quarkus:quarkus-jdbc-mariadb'
+    implementation 'io.quarkus:quarkus-liquibase'
+    implementation 'io.quarkus:quarkus-oidc'
+    implementation 'io.quarkus:quarkus-quartz'
+    implementation 'io.quarkus:quarkus-rest-client-reactive'
+    implementation 'io.quarkus:quarkus-rest-client-reactive-jackson'
+    implementation 'io.quarkus:quarkus-resteasy-reactive'
+    implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
+    implementation 'io.quarkus:quarkus-smallrye-health'
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
+
     implementation 'org.jboss.logmanager:log4j2-jboss-logmanager'
-    implementation 'org.jboss.resteasy:resteasy-validator-provider-11:4.0.0.Beta8'
     implementation 'net.sf.biweekly:biweekly:0.6.6'
-
-    compileOnly 'org.projectlombok:lombok:1.18.24'
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    implementation 'com.fasterxml.uuid:java-uuid-generator:4.1.0'
 
     testImplementation 'io.quarkus:quarkus-junit5'
 }
 
 group 'de.cybine'
-version '1.0-SNAPSHOT'
+version '2.0-SNAPSHOT'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
