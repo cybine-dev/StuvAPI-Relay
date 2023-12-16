@@ -1,6 +1,7 @@
 package de.cybine.stuvapi.relay.util.api;
 
 import com.fasterxml.jackson.databind.*;
+import de.cybine.stuvapi.relay.config.*;
 import de.cybine.stuvapi.relay.util.*;
 import de.cybine.stuvapi.relay.util.api.permission.*;
 import de.cybine.stuvapi.relay.util.datasource.*;
@@ -10,7 +11,9 @@ import jakarta.enterprise.context.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
 
+import java.io.*;
 import java.lang.reflect.*;
+import java.net.*;
 import java.util.*;
 
 @Slf4j
@@ -20,8 +23,9 @@ public class ApiFieldResolver
 {
     public static final String DEFAULT_CONTEXT = "default";
 
-    private final ObjectMapper     objectMapper;
-    private final SecurityIdentity securityIdentity;
+    private final ObjectMapper      objectMapper;
+    private final SecurityIdentity  securityIdentity;
+    private final ApplicationConfig applicationConfig;
 
     private final Map<String, ApiFieldResolverContext> contexts = new HashMap<>();
 
@@ -32,11 +36,11 @@ public class ApiFieldResolver
     private ApiPermissionConfig permissionConfig;
 
     @PostConstruct
-    @SneakyThrows
-    void setup( )
+    void setup( ) throws URISyntaxException, IOException
     {
         this.permissionConfig = this.objectMapper.readValue(
-                this.getClass().getClassLoader().getResource("api-permissions.json"), ApiPermissionConfig.class);
+                FilePathHelper.resolvePath(this.applicationConfig.paths().apiPermissionsPath()).toFile(),
+                ApiPermissionConfig.class);
 
         this.contexts.clear();
         for (ApiContextConfig context : this.permissionConfig.getContexts())
