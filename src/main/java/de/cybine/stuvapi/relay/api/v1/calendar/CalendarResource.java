@@ -1,12 +1,14 @@
 package de.cybine.stuvapi.relay.api.v1.calendar;
 
 import de.cybine.stuvapi.relay.service.calendar.*;
+import jakarta.annotation.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
 import org.jboss.resteasy.reactive.*;
 
 import java.io.*;
 
+@PermitAll
 @ApplicationScoped
 @RequiredArgsConstructor
 public class CalendarResource implements CalendarApi

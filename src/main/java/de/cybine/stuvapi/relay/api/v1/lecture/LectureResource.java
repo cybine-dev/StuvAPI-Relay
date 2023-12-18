@@ -4,12 +4,14 @@ import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.service.lecture.*;
 import de.cybine.stuvapi.relay.util.api.query.*;
 import de.cybine.stuvapi.relay.util.api.response.*;
+import jakarta.annotation.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
 import org.jboss.resteasy.reactive.*;
 
 import java.util.*;
 
+@PermitAll
 @ApplicationScoped
 @AllArgsConstructor
 public class LectureResource implements LectureApi

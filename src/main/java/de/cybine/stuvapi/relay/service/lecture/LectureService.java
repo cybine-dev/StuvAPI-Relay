@@ -28,7 +28,7 @@ public class LectureService
     {
         this.resolver.registerTypeRepresentation(Lecture.class, LectureEntity.class)
                      .registerField("id", ID)
-                     .registerField("lecture_id", LectureEntity_.LECTURE_ID)
+                     .registerField("lecture_id", LECTURE_ID)
                      .registerField("name", NAME)
                      .registerField("course", COURSE)
                      .registerField("starts_at", STARTS_AT)

@@ -3,6 +3,7 @@ package de.cybine.stuvapi.relay.api.v1.action.metadata;
 import de.cybine.stuvapi.relay.data.action.metadata.*;
 import de.cybine.stuvapi.relay.util.api.query.*;
 import de.cybine.stuvapi.relay.util.api.response.*;
+import jakarta.annotation.security.*;
 import jakarta.validation.*;
 import jakarta.validation.constraints.*;
 import jakarta.ws.rs.Path;
@@ -13,6 +14,7 @@ import org.jboss.resteasy.reactive.*;
 
 import java.util.*;
 
+@PermitAll
 @Path("/api/v1/action/metadata")
 @Tag(name = "ActionMetadata Resource")
 @Produces(MediaType.APPLICATION_JSON)

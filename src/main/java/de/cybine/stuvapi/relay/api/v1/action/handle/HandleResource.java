@@ -8,6 +8,7 @@ import de.cybine.stuvapi.relay.exception.action.*;
 import de.cybine.stuvapi.relay.service.action.*;
 import de.cybine.stuvapi.relay.service.action.data.*;
 import de.cybine.stuvapi.relay.util.api.response.*;
+import io.quarkus.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
 import org.jboss.resteasy.reactive.*;
@@ -15,6 +16,7 @@ import org.jboss.resteasy.reactive.*;
 import java.time.*;
 import java.util.*;
 
+@Authenticated
 @ApplicationScoped
 @RequiredArgsConstructor
 public class HandleResource implements HandleApi

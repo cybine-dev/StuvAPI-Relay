@@ -5,12 +5,14 @@ import de.cybine.stuvapi.relay.service.action.*;
 import de.cybine.stuvapi.relay.util.api.query.*;
 import de.cybine.stuvapi.relay.util.api.response.*;
 import de.cybine.stuvapi.relay.util.cloudevent.*;
+import jakarta.annotation.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
 import org.jboss.resteasy.reactive.*;
 
 import java.util.*;
 
+@PermitAll
 @ApplicationScoped
 @RequiredArgsConstructor
 public class ProcessResource implements ProcessApi
