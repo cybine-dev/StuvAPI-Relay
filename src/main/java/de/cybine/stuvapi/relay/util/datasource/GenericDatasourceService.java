@@ -8,9 +8,11 @@ import io.quarkus.arc.*;
 import jakarta.enterprise.inject.*;
 import jakarta.transaction.*;
 import lombok.*;
+import lombok.extern.slf4j.*;
 
 import java.util.*;
 
+@Slf4j
 @SuppressWarnings("unused")
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class GenericDatasourceService<E, D>
@@ -27,14 +29,17 @@ public class GenericDatasourceService<E, D>
 
     public List<D> fetch(ApiQuery query)
     {
-        return this.fetch(this.getDatasourceQuery(query));
+        DatasourceQuery datasourceQuery = this.getDatasourceQuery(query);
+        List<D> items = this.fetch(datasourceQuery);
+
+        datasourceQuery.getPagination().ifPresent(this::applyPagination);
+
+        return items;
     }
 
     public List<D> fetch(DatasourceQuery query)
     {
         List<E> entities = this.fetchEntities(query);
-        query.getPagination().ifPresent(this::applyPagination);
-
         return this.getToDataProcessor().toList(entities).result();
     }
 
@@ -61,15 +66,32 @@ public class GenericDatasourceService<E, D>
 
     public <O> List<O> fetchOptions(ApiOptionQuery query)
     {
-        return this.fetchOptions(this.getDatasourceQuery(query));
+        DatasourceQuery datasourceQuery = this.getDatasourceQuery(query);
+        List<O> options = this.fetchOptions(datasourceQuery);
+
+        datasourceQuery.getPagination().ifPresent(this::applyPagination);
+
+        return options;
     }
 
     public <O> List<O> fetchOptions(DatasourceQuery query)
     {
-        List<O> options = this.repository.fetchOptions(query);
-        query.getPagination().ifPresent(this::applyPagination);
+        return this.repository.fetchOptions(query);
+    }
+
+    public List<List<Object>> fetchMultiOptions(ApiOptionQuery query)
+    {
+        DatasourceQuery datasourceQuery = this.getDatasourceQuery(query);
+        List<List<Object>> options = this.fetchMultiOptions(datasourceQuery);
+
+        datasourceQuery.getPagination().ifPresent(this::applyPagination);
 
         return options;
+    }
+
+    public List<List<Object>> fetchMultiOptions(DatasourceQuery query)
+    {
+        return this.repository.fetchMultiOptions(query);
     }
 
     public List<ApiCountInfo> fetchTotal(ApiCountQuery query)
@@ -109,8 +131,7 @@ public class GenericDatasourceService<E, D>
         ConverterConstraint constraint = ConverterConstraint.builder().allowEmptyCollection(true).maxDepth(20).build();
         ConverterTree tree = ConverterTree.builder().constraint(constraint).build();
 
-        System.out.println(context);
-
+        log.debug("Generating datasource-query from api-query with context '{}'", context);
         return this.registry.getProcessor(type, DatasourceQuery.class, tree)
                             .withContext(ApiQueryConverter.CONTEXT_PROPERTY, context)
                             .withContext(ApiQueryConverter.DATA_TYPE_PROPERTY, this.dataType)
