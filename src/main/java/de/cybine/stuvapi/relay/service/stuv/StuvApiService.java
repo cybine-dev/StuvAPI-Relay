@@ -154,8 +154,8 @@ public class StuvApiService
         DatasourceConditionDetail<ZonedDateTime> isAfterStartOfDay = DatasourceHelper.isGreater(LectureEntity_.ENDS_AT,
                 dateTime);
 
-        DatasourceConditionDetail<String> isNotArchived = DatasourceHelper.isNotEqual(LectureEntity_.STATUS,
-                LectureStatus.ARCHIVED.name());
+        DatasourceConditionDetail<LectureStatus> isNotArchived = DatasourceHelper.isNotEqual(LectureEntity_.STATUS,
+                LectureStatus.ARCHIVED);
 
         DatasourceQuery query = DatasourceQuery.builder()
                                                .condition(DatasourceHelper.and(isAfterStartOfDay, isNotArchived))
