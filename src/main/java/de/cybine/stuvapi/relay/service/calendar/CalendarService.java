@@ -50,7 +50,11 @@ public class CalendarService
             log.info("Folder for iCalendar files created. Path: {}", folderPath.toAbsolutePath().toString());
         }
 
+        DatasourceConditionDetail<LectureStatus> isNotArchived = DatasourceHelper.isNotEqual(LectureEntity_.STATUS,
+                LectureStatus.ARCHIVED);
+
         DatasourceQuery query = DatasourceQuery.builder()
+                                               .condition(DatasourceHelper.and(isNotArchived))
                                                .relation(DatasourceHelper.fetch(LectureEntity_.ROOMS))
                                                .build();
 
