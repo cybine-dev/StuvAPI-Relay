@@ -33,18 +33,21 @@ public class ApiFieldResolver
 
     private final Map<Type, Type> representationTypes = new HashMap<>();
 
-    private ApiPermissionConfig permissionConfig;
+    private ApiPermissionConfig permissionConfig = ApiPermissionConfig.builder().build();
 
     @PostConstruct
     void setup( ) throws URISyntaxException, IOException
     {
-        this.permissionConfig = this.objectMapper.readValue(
-                FilePathHelper.resolvePath(this.applicationConfig.paths().apiPermissionsPath()).toFile(),
-                ApiPermissionConfig.class);
+        String permissionJson = FilePathHelper.resolvePath(this.applicationConfig.paths().apiPermissionsPath())
+                                              .flatMap(FilePathHelper::tryRead)
+                                              .orElse(null);
+
+        if(permissionJson != null)
+            this.permissionConfig = this.objectMapper.readValue(permissionJson, ApiPermissionConfig.class);
 
         this.contexts.clear();
         for (ApiContextConfig context : this.permissionConfig.getContexts())
-            System.out.println("ctx: " + this.getContext(context.getName()).getContextName());
+            log.debug("Registering api-context {}", this.getContext(context.getName()).getContextName());
     }
 
     public ApiFieldResolverContext getUserContext( )

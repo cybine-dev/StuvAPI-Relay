@@ -29,7 +29,7 @@ public class RBACResolver
     @PostConstruct
     void setup( ) throws URISyntaxException
     {
-        this.reload(FilePathHelper.resolvePath(this.applicationConfig.paths().rbacPath()));
+        FilePathHelper.resolvePath(this.applicationConfig.paths().rbacPath()).ifPresent(this::reload);
     }
 
     public void reload(Path path)
@@ -62,7 +62,7 @@ public class RBACResolver
             return false;
 
         return rbacRole.getInheritedRoles()
-                       .get()
+                       .orElseThrow()
                        .stream()
                        .map(this.roles::get)
                        .filter(Objects::nonNull)
