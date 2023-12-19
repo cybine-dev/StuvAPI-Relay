@@ -57,9 +57,8 @@ public class DatasourceQueryInterpreter<T>
             pagination.getSize().ifPresent(typedQuery::setMaxResults);
             pagination.getOffset().ifPresent(typedQuery::setFirstResult);
 
-            List<String> optionProperties = this.query.getFirstProperty().map(List::of).orElseThrow();
             if (pagination.includeTotal())
-                pagination.setTotal(this.executeResultCountQuery(parameters, optionProperties));
+                pagination.setTotal(this.executeResultCountQuery(parameters, List.of(fieldName)));
         }
 
         return (TypedQuery<O>) typedQuery;
