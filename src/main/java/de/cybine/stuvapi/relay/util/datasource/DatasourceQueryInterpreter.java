@@ -212,7 +212,8 @@ public class DatasourceQueryInterpreter<T>
         query.select(criteriaBuilder.count(root))
              .where(this.query.getConditions(criteriaBuilder, root).toArray(Predicate[]::new));
 
-        if (!properties.isEmpty())
+        String idFieldName = this.findIdField().map(Field::getName).orElse(null);
+        if (!properties.isEmpty() && (idFieldName == null || !properties.contains(idFieldName)))
             query.groupBy(properties.stream().map(root::get).collect(Collectors.toList()));
 
         TypedQuery<Long> typedQuery = this.entityManager.createQuery(query);
