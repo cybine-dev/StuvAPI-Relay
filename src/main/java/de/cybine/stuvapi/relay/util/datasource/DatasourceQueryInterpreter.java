@@ -209,7 +209,7 @@ public class DatasourceQueryInterpreter<T>
         CriteriaQuery<Long> query = criteriaBuilder.createQuery(Long.class);
         Root<T> root = query.from(this.type);
 
-        query.select(criteriaBuilder.count(root))
+        query.select(criteriaBuilder.countDistinct(root))
              .where(this.query.getConditions(criteriaBuilder, root).toArray(Predicate[]::new));
 
         String idFieldName = this.findIdField().map(Field::getName).orElse(null);
