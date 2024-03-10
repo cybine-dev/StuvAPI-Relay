@@ -1,5 +1,6 @@
 FROM gradle:jdk17-alpine AS build
 ENV SETTINGS_DATABASE_VENDOR mariadb
+ENV QUARKUS_PROFILE prod
 
 WORKDIR /home/gradle/src
 COPY --chown=gradle:gradle . /home/gradle/src
