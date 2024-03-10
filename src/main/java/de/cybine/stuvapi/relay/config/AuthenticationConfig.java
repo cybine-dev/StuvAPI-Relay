@@ -1,7 +1,6 @@
 package de.cybine.stuvapi.relay.config;
 
-import de.cybine.stuvapi.relay.exception.api.*;
-import de.cybine.stuvapi.relay.util.api.permission.*;
+import de.cybine.quarkus.util.api.permission.*;
 import io.netty.handler.codec.http.*;
 import io.quarkus.oidc.runtime.*;
 import io.quarkus.security.identity.*;
@@ -75,7 +74,7 @@ public class AuthenticationConfig implements HttpAuthenticationMechanism, Securi
         this.mechanism = this.getMechanism(authHeader);
         return switch (this.mechanism)
         {
-            case API_TOKEN -> throw new NotImplementedException();
+            case API_TOKEN -> throw new UnsupportedOperationException();
             case OIDC -> this.oidcMechanism;
         };
     }

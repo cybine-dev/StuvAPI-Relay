@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.data.lecture;
 
 import com.fasterxml.jackson.annotation.*;
-import de.cybine.stuvapi.relay.util.*;
+import de.cybine.quarkus.util.*;
 import lombok.*;
 import lombok.extern.jackson.*;
 

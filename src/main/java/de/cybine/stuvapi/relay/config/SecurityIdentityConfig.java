@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.config;
 
+import de.cybine.quarkus.util.api.permission.*;
 import de.cybine.stuvapi.relay.config.AuthenticationConfig.*;
-import de.cybine.stuvapi.relay.util.api.permission.*;
 import io.quarkus.security.identity.*;
 import io.quarkus.security.runtime.*;
 import jakarta.enterprise.context.*;

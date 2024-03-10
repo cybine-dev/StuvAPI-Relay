@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.data.lecture;
 
+import de.cybine.quarkus.util.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.util.*;
 import jakarta.persistence.*;
 import lombok.*;
 

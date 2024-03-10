@@ -1,9 +1,10 @@
 package de.cybine.stuvapi.relay.service.lecture;
 
+import de.cybine.quarkus.util.api.*;
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.datasource.*;
+import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.util.api.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import io.quarkus.runtime.*;
 import jakarta.annotation.*;
 import jakarta.enterprise.context.*;
@@ -18,8 +19,8 @@ import static de.cybine.stuvapi.relay.data.room.RoomEntity_.*;
 @RequiredArgsConstructor
 public class RoomService
 {
-    private final GenericDatasourceService<RoomEntity, Room> service = GenericDatasourceService.forType(
-            RoomEntity.class, Room.class);
+    private final GenericApiQueryService<RoomEntity, Room> service = GenericApiQueryService.forType(RoomEntity.class,
+            Room.class);
 
     private final ApiFieldResolver resolver;
 
@@ -28,11 +29,11 @@ public class RoomService
     @PostConstruct
     void setup( )
     {
-        this.resolver.registerTypeRepresentation(Room.class, RoomEntity.class)
-                     .registerField("id", ID)
-                     .registerField("name", NAME)
-                     .registerField("display_name", DISPLAY_NAME)
-                     .registerField("lectures", LECTURES);
+        this.resolver.registerType(Room.class)
+                     .withField("id", ID)
+                     .withField("name", NAME)
+                     .withField("display_name", DISPLAY_NAME)
+                     .withRelation("lectures", LECTURES, Lecture.class);
 
         this.service.fetchEntities(DatasourceQuery.builder().build())
                     .forEach(item -> this.registerRoomId(item.getName(), RoomId.of(item.getId())));
@@ -68,7 +69,7 @@ public class RoomService
         return Optional.ofNullable(this.nameCache.get(name));
     }
 
-    public Set<String> getKnownNames()
+    public Set<String> getKnownNames( )
     {
         return this.nameCache.keySet();
     }

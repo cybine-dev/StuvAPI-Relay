@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.data.action.process;
 
+import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import jakarta.persistence.metamodel.*;
 import lombok.experimental.*;
 

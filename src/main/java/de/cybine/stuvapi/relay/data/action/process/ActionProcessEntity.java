@@ -1,10 +1,14 @@
 package de.cybine.stuvapi.relay.data.action.process;
 
+import de.cybine.quarkus.util.*;
+import de.cybine.quarkus.util.action.data.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.service.action.data.*;
-import de.cybine.stuvapi.relay.util.*;
+import de.cybine.stuvapi.relay.service.action.*;
+import jakarta.persistence.Table;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.*;
+import org.hibernate.type.*;
 
 import java.io.*;
 import java.time.*;
@@ -55,6 +59,7 @@ public class ActionProcessEntity implements Serializable, WithId<UUID>
     @Column(name = ActionProcessEntity_.DUE_AT_COLUMN)
     private ZonedDateTime dueAt;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = ActionProcessEntity_.DATA_COLUMN)
     @Convert(converter = ActionDataAttributeConverter.class)
     private ActionData data;

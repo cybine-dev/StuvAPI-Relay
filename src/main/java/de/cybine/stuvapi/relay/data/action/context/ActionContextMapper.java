@@ -1,9 +1,8 @@
 package de.cybine.stuvapi.relay.data.action.context;
 
-import de.cybine.stuvapi.relay.data.action.metadata.*;
+import de.cybine.quarkus.data.util.primitive.*;
+import de.cybine.quarkus.util.converter.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
-import de.cybine.stuvapi.relay.data.util.primitive.*;
-import de.cybine.stuvapi.relay.util.converter.*;
 
 public class ActionContextMapper implements EntityMapper<ActionContextEntity, ActionContext>
 {
@@ -20,13 +19,25 @@ public class ActionContextMapper implements EntityMapper<ActionContextEntity, Ac
     }
 
     @Override
+    public ConverterMetadataBuilder getToEntityMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(ActionProcess.class, ActionProcessEntity.class);
+    }
+
+    @Override
+    public ConverterMetadataBuilder getToDataMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(ActionProcessEntity.class, ActionProcess.class);
+    }
+
+    @Override
     public ActionContextEntity toEntity(ActionContext data, ConversionHelper helper)
     {
         return ActionContextEntity.builder()
                                   .id(data.findId().map(Id::getValue).orElse(null))
-                                  .metadataId(helper.optional(data::getMetadataId).map(Id::getValue).orElse(null))
-                                  .metadata(helper.toItem(ActionMetadata.class, ActionMetadataEntity.class)
-                                                  .map(data::getMetadata))
+                                  .namespace(data.getNamespace())
+                                  .category(data.getCategory())
+                                  .name(data.getName())
                                   .correlationId(data.getCorrelationId())
                                   .itemId(data.getItemId().orElse(null))
                                   .processes(helper.toSet(ActionProcess.class, ActionProcessEntity.class)
@@ -39,9 +50,9 @@ public class ActionContextMapper implements EntityMapper<ActionContextEntity, Ac
     {
         return ActionContext.builder()
                             .id(ActionContextId.of(entity.getId()))
-                            .metadataId(helper.optional(entity::getMetadataId).map(ActionMetadataId::of).orElse(null))
-                            .metadata(helper.toItem(ActionMetadataEntity.class, ActionMetadata.class)
-                                            .map(entity::getMetadata))
+                            .namespace(entity.getNamespace())
+                            .category(entity.getCategory())
+                            .name(entity.getName())
                             .correlationId(entity.getCorrelationId())
                             .itemId(entity.getItemId().orElse(null))
                             .processes(helper.toSet(ActionProcessEntity.class, ActionProcess.class)

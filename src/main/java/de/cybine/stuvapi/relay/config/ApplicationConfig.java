@@ -24,28 +24,4 @@ public interface ApplicationConfig
     @NotNull @NotBlank
     @WithName("service-name")
     String serviceName( );
-
-    @WithName("converter")
-    Converter converter( );
-
-    @WithName("paths")
-    FilePaths paths( );
-
-    interface Converter
-    {
-        @WithDefault("false")
-        @WithName("allow-multi-level-relations")
-        boolean allowMultiLevelRelations( );
-    }
-
-    interface FilePaths
-    {
-        @WithName("rbac-path")
-        @WithDefault("%resources%/rbac.json")
-        String rbacPath( );
-
-        @WithName("api-permissions-path")
-        @WithDefault("%resources%/api-permissions.json")
-        String apiPermissionsPath( );
-    }
 }

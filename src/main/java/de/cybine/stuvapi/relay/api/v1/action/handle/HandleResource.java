@@ -2,12 +2,12 @@ package de.cybine.stuvapi.relay.api.v1.action.handle;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
+import de.cybine.quarkus.exception.action.*;
+import de.cybine.quarkus.util.action.data.*;
+import de.cybine.quarkus.util.api.response.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
-import de.cybine.stuvapi.relay.exception.action.*;
 import de.cybine.stuvapi.relay.service.action.*;
-import de.cybine.stuvapi.relay.service.action.data.*;
-import de.cybine.stuvapi.relay.util.api.response.*;
 import io.quarkus.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
@@ -29,30 +29,19 @@ public class HandleResource implements HandleApi
     private final ActionDataTypeRegistry typeRegistry;
 
     @Override
-    public RestResponse<ApiResponse<ActionContext>> create(String namespace, String category, String name,
-            String itemId)
+    public RestResponse<ApiResponse<String>> create(String namespace, String category, String name, String itemId)
     {
-        ActionContextMetadata metadata = ActionContextMetadata.builder()
-                                                              .namespace(namespace)
-                                                              .category(category)
-                                                              .name(name)
-                                                              .itemId(itemId)
-                                                              .build();
-
-        return ApiResponse.<ActionContext>builder()
+        return ApiResponse.<String>builder()
                           .status(RestResponse.Status.CREATED)
-                          .value(this.actionService.createContext(metadata))
+                          .value(this.actionService.beginWorkflow(namespace, category, name, itemId))
                           .build()
                           .toResponse();
     }
 
     @Override
-    public RestResponse<ApiResponse<Void>> terminate(String correlationId)
+    public RestResponse<ApiResponse<ActionProcess>> terminate(String correlationId)
     {
-        ActionContext context = this.contextService.fetchByCorrelationId(correlationId).orElseThrow();
-        this.actionService.terminateContext(context.getId());
-
-        return ApiResponse.<Void>builder().build().toResponse();
+        return this.process(correlationId, null, ActionService.TERMINATED_STATE, null);
     }
 
     @Override
@@ -60,11 +49,11 @@ public class HandleResource implements HandleApi
             Map<String, Object> data)
     {
         ActionContext context = this.contextService.fetchByCorrelationId(correlationId).orElseThrow();
-        ActionProcess currentState = this.actionService.fetchCurrentState(context.getId()).orElseThrow();
+        ActionProcess currentState = this.actionService.fetchCurrentState(correlationId).orElseThrow();
         if (eventId != null && !Objects.equals(currentState.getEventId(), eventId))
             return ApiResponse.<ActionProcess>builder().status(RestResponse.Status.CONFLICT).build().toResponse();
 
-        ActionData<?> actionData = null;
+        ActionData<Object> actionData = null;
         if (data != null)
         {
             if (!data.containsKey("@type"))
@@ -75,10 +64,11 @@ public class HandleResource implements HandleApi
 
             try
             {
-                JavaType dataType = this.typeRegistry.findType((String) data.get("@type")).orElseThrow();
+                String typeName = (String) data.get("@type");
+                JavaType dataType = this.typeRegistry.findType(typeName).orElseThrow();
 
                 String serializedData = this.objectMapper.writeValueAsString(data.get("value"));
-                actionData = ActionData.of(this.objectMapper.readValue(serializedData, dataType));
+                actionData = new ActionData<>(typeName, this.objectMapper.readValue(serializedData, dataType));
             }
             catch (JsonProcessingException exception)
             {
@@ -86,15 +76,19 @@ public class HandleResource implements HandleApi
             }
         }
 
-        this.actionService.process(ActionProcessMetadata.builder()
-                                                        .contextId(context.getId())
-                                                        .status(action)
-                                                        .createdAt(ZonedDateTime.now())
-                                                        .data(actionData)
-                                                        .build());
+        ActionMetadata metadata = ActionMetadata.builder()
+                                                .namespace(context.getNamespace())
+                                                .category(context.getCategory())
+                                                .name(context.getName())
+                                                .action(action)
+                                                .correlationId(correlationId)
+                                                .createdAt(ZonedDateTime.now())
+                                                .build();
+
+        this.actionService.perform(Action.of(metadata, actionData));
 
         return ApiResponse.<ActionProcess>builder()
-                          .value(this.actionService.fetchCurrentState(context.getId()).orElseThrow())
+                          .value(this.actionService.fetchCurrentState(correlationId).orElseThrow())
                           .build()
                           .toResponse();
     }
@@ -103,7 +97,10 @@ public class HandleResource implements HandleApi
     public RestResponse<ApiResponse<List<String>>> fetchAvailableActions(String correlationId)
     {
         return ApiResponse.<List<String>>builder()
-                          .value(this.actionService.fetchAvailableActions(correlationId))
+                          .value(this.actionService.availableActions(correlationId)
+                                                   .stream()
+                                                   .map(ActionProcessorMetadata::getAction)
+                                                   .toList())
                           .build()
                           .toResponse();
     }

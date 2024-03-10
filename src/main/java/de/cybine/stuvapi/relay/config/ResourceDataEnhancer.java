@@ -1,8 +1,9 @@
 package de.cybine.stuvapi.relay.config;
 
-import de.cybine.stuvapi.relay.util.api.permission.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.api.response.*;
+import de.cybine.quarkus.api.response.*;
+import de.cybine.quarkus.util.api.permission.*;
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.api.response.*;
 import io.vertx.core.http.*;
 import jakarta.enterprise.context.*;
 import jakarta.ws.rs.container.*;

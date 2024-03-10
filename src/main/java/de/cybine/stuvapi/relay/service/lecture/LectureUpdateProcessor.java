@@ -1,53 +1,37 @@
 package de.cybine.stuvapi.relay.service.lecture;
 
+import de.cybine.quarkus.util.action.*;
+import de.cybine.quarkus.util.action.data.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.service.action.*;
-import de.cybine.stuvapi.relay.service.stuv.*;
+import io.quarkus.arc.*;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.experimental.*;
 
 import java.time.*;
 import java.util.*;
 import java.util.stream.*;
 
-@RequiredArgsConstructor
-public class LectureUpdateProcessor implements ActionProcessor<LectureDataDiff>
+@UtilityClass
+public class LectureUpdateProcessor
 {
-    public static final String ACTION = "lecture-update";
-
-    private final EntityManager entityManager;
-
-    private final RoomService roomService;
-
-    @Override
-    public ActionProcessorMetadata getMetadata( )
+    public static boolean when(Action action, ActionHelper helper)
     {
-        return ActionProcessorMetadata.builder()
-                                      .namespace(StuvApiService.SYNC_METADATA.getNamespace())
-                                      .category(StuvApiService.SYNC_METADATA.getCategory())
-                                      .name(StuvApiService.SYNC_METADATA.getName())
-                                      .toStatus(ACTION)
-                                      .build();
+        return action.<LectureDataDiff>getData().orElseThrow().value().hasDiff();
     }
 
-    @Override
-    public boolean shouldExecute(ActionStateTransition transition)
+    public static ActionResult<LectureDataDiff> apply(Action action, ActionHelper helper)
     {
-        return transition.getNextState().<LectureDataDiff>getData().orElseThrow().value().hasDiff();
-    }
+        EntityManager entityManager = Arc.container().select(EntityManager.class).get();
+        RoomService roomService = Arc.container().select(RoomService.class).get();
 
-    @Override
-    public ActionProcessorResult<LectureDataDiff> process(ActionStateTransition transition)
-    {
-        LectureDataDiff diff = transition.getNextState().<LectureDataDiff>getData().orElseThrow().value();
+        LectureDataDiff diff = action.<LectureDataDiff>getData().orElseThrow().value();
         LectureData next = diff.getNext();
 
-        LectureEntity lecture = this.entityManager.createQuery(
-                                            "SELECT lecture FROM Lecture lecture WHERE lecture.lectureId = " +
-                                                    ":lectureId", LectureEntity.class)
-                                                  .setParameter("lectureId", next.getId())
-                                                  .getSingleResult();
+        LectureEntity lecture = entityManager.createQuery(
+                                                     "SELECT lecture FROM Lecture lecture WHERE lecture.lectureId = " + ":lectureId", LectureEntity.class)
+                                             .setParameter("lectureId", next.getId())
+                                             .getSingleResult();
 
         lecture.setName(next.getName());
         lecture.setCourse(next.getCourse().orElse(null));
@@ -56,11 +40,11 @@ public class LectureUpdateProcessor implements ActionProcessor<LectureDataDiff>
         lecture.setEndsAt(next.getEndsAt().atZoneSameInstant(ZoneId.systemDefault()));
         lecture.setRooms(next.getRooms()
                              .stream()
-                             .map(this.roomService::findIdByName)
+                             .map(roomService::findIdByName)
                              .map(Optional::orElseThrow)
                              .map(item -> RoomEntity.builder().id(item.getValue()).build())
                              .collect(Collectors.toSet()));
 
-        return ActionProcessorResult.of(diff);
+        return helper.createResult(diff);
     }
 }

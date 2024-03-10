@@ -1,9 +1,9 @@
 package de.cybine.stuvapi.relay.api.v1.lecture;
 
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.api.response.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.service.lecture.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.api.response.*;
 import jakarta.annotation.security.*;
 import jakarta.enterprise.context.*;
 import lombok.*;

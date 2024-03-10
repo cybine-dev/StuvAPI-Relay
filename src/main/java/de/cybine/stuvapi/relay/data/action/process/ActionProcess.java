@@ -2,10 +2,10 @@ package de.cybine.stuvapi.relay.data.action.process;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
+import de.cybine.quarkus.data.util.*;
+import de.cybine.quarkus.util.*;
+import de.cybine.quarkus.util.action.data.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.data.util.*;
-import de.cybine.stuvapi.relay.service.action.data.*;
-import de.cybine.stuvapi.relay.util.*;
 import lombok.*;
 import lombok.extern.jackson.*;
 
@@ -31,12 +31,9 @@ public class ActionProcess implements Serializable, WithId<ActionProcessId>
     private final String eventId = UUIDv7.generate().toString();
 
     @JsonProperty("context_id")
-    @JsonView(Views.Simple.class)
-    @JsonDeserialize(using = ActionContextId.Deserializer.class)
     private final ActionContextId contextId;
 
     @JsonProperty("context")
-    @JsonView(Views.Extended.class)
     private final ActionContext context;
 
     @JsonProperty("status")

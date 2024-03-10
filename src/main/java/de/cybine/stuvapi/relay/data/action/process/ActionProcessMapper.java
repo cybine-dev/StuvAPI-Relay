@@ -1,8 +1,8 @@
 package de.cybine.stuvapi.relay.data.action.process;
 
+import de.cybine.quarkus.data.util.primitive.*;
+import de.cybine.quarkus.util.converter.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.data.util.primitive.*;
-import de.cybine.stuvapi.relay.util.converter.*;
 
 public class ActionProcessMapper implements EntityMapper<ActionProcessEntity, ActionProcess>
 {
@@ -16,6 +16,18 @@ public class ActionProcessMapper implements EntityMapper<ActionProcessEntity, Ac
     public Class<ActionProcess> getDataType( )
     {
         return ActionProcess.class;
+    }
+
+    @Override
+    public ConverterMetadataBuilder getToEntityMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(ActionContext.class, ActionContextEntity.class);
+    }
+
+    @Override
+    public ConverterMetadataBuilder getToDataMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(ActionContextEntity.class, ActionContext.class);
     }
 
     @Override

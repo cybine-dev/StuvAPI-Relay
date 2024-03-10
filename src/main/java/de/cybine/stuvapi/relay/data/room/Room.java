@@ -2,8 +2,8 @@ package de.cybine.stuvapi.relay.data.room;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
+import de.cybine.quarkus.util.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
-import de.cybine.stuvapi.relay.util.*;
 import lombok.*;
 import lombok.extern.jackson.*;
 
@@ -31,7 +31,6 @@ public class Room implements Serializable, WithId<RoomId>
     private final String displayName;
 
     @JsonProperty("lectures")
-    @JsonView(Views.Extended.class)
     private final Set<Lecture> lectures;
 
     public String getDisplayName( )
@@ -45,7 +44,6 @@ public class Room implements Serializable, WithId<RoomId>
     }
 
     @JsonProperty("lecture_ids")
-    @JsonView(Views.Simple.class)
     public Optional<Set<LectureId>> getLectureIds( )
     {
         return this.getLectures().map(items -> items.stream().map(WithId::getId).collect(Collectors.toSet()));

@@ -1,15 +1,15 @@
 package de.cybine.stuvapi.relay.service.action;
 
+import de.cybine.quarkus.util.api.*;
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.cloudevent.*;
+import de.cybine.quarkus.util.converter.*;
+import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
-import de.cybine.stuvapi.relay.util.api.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.cloudevent.*;
-import de.cybine.stuvapi.relay.util.converter.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import io.quarkus.runtime.*;
 import jakarta.annotation.*;
-import jakarta.enterprise.context.*;
+import jakarta.inject.*;
 import lombok.*;
 
 import java.util.*;
@@ -17,12 +17,11 @@ import java.util.*;
 import static de.cybine.stuvapi.relay.data.action.process.ActionProcessEntity_.*;
 
 @Startup
-@ApplicationScoped
+@Singleton
 @RequiredArgsConstructor
 public class ProcessService
 {
-    private final GenericDatasourceService<ActionProcessEntity, ActionProcess> service =
-            GenericDatasourceService.forType(
+    private final GenericApiQueryService<ActionProcessEntity, ActionProcess> service = GenericApiQueryService.forType(
             ActionProcessEntity.class, ActionProcess.class);
 
     private final ApiFieldResolver  resolver;
@@ -31,18 +30,18 @@ public class ProcessService
     @PostConstruct
     void setup( )
     {
-        this.resolver.registerTypeRepresentation(ActionProcess.class, ActionProcessEntity.class)
-                     .registerField("id", ID)
-                     .registerField("event_id", EVENT_ID)
-                     .registerField("context_id", CONTEXT_ID)
-                     .registerField("context", CONTEXT)
-                     .registerField("status", STATUS)
-                     .registerField("priority", PRIORITY)
-                     .registerField("description", DESCRIPTION)
-                     .registerField("creator_id", CREATOR_ID)
-                     .registerField("created_at", CREATED_AT)
-                     .registerField("due_at", DUE_AT)
-                     .registerField("data", DATA);
+        this.resolver.registerType(ActionProcess.class)
+                     .withField("id", ID)
+                     .withField("event_id", EVENT_ID)
+                     .withField("context_id", CONTEXT_ID)
+                     .withField("context", CONTEXT)
+                     .withField("status", STATUS)
+                     .withField("priority", PRIORITY)
+                     .withField("description", DESCRIPTION)
+                     .withField("creator_id", CREATOR_ID)
+                     .withField("created_at", CREATED_AT)
+                     .withField("due_at", DUE_AT)
+                     .withField("data", DATA);
     }
 
     public Optional<ActionProcess> fetchById(ActionProcessId id)
@@ -53,18 +52,18 @@ public class ProcessService
         return this.service.fetchSingle(DatasourceQuery.builder().condition(condition).build());
     }
 
-    public Optional<ActionProcess> fetchByEventId(UUID eventId)
+    public Optional<ActionProcess> fetchByEventId(String eventId)
     {
-        DatasourceConditionDetail<String> idEquals = DatasourceHelper.isEqual(EVENT_ID, eventId.toString());
+        DatasourceConditionDetail<String> idEquals = DatasourceHelper.isEqual(EVENT_ID, eventId);
         DatasourceConditionInfo condition = DatasourceHelper.and(idEquals);
 
         return this.service.fetchSingle(DatasourceQuery.builder().condition(condition).build());
     }
 
-    public List<ActionProcess> fetchByCorrelationId(UUID correlationId)
+    public List<ActionProcess> fetchByCorrelationId(String correlationId)
     {
         DatasourceConditionDetail<String> correlationIdEquals = DatasourceHelper.isEqual(
-                ActionContextEntity_.CORRELATION_ID, correlationId.toString());
+                ActionContextEntity_.CORRELATION_ID, correlationId);
         DatasourceConditionInfo condition = DatasourceHelper.and(correlationIdEquals);
 
         DatasourceRelationInfo contextRelation = DatasourceRelationInfo.builder()
@@ -95,16 +94,14 @@ public class ProcessService
         return this.service.fetchTotal(query);
     }
 
-    public Optional<CloudEvent> fetchAsCloudEventByEventId(UUID eventId)
+    public Optional<CloudEvent> fetchAsCloudEventByEventId(String eventId)
     {
-        DatasourceConditionDetail<String> idEquals = DatasourceHelper.isEqual(EVENT_ID, eventId.toString());
+        DatasourceConditionDetail<String> idEquals = DatasourceHelper.isEqual(EVENT_ID, eventId);
         DatasourceConditionInfo condition = DatasourceHelper.and(idEquals);
 
-        DatasourceRelationInfo metadataRelation = DatasourceHelper.fetch(ActionContextEntity_.METADATA);
         DatasourceRelationInfo contextRelation = DatasourceRelationInfo.builder()
                                                                        .property(CONTEXT.getName())
                                                                        .fetch(true)
-                                                                       .relation(metadataRelation)
                                                                        .build();
 
         DatasourceQuery query = DatasourceQuery.builder().condition(condition).relation(contextRelation).build();
@@ -113,18 +110,16 @@ public class ProcessService
                            .map(ConversionResult::result);
     }
 
-    public List<CloudEvent> fetchAsCloudEventsByCorrelationId(UUID correlationId)
+    public List<CloudEvent> fetchAsCloudEventsByCorrelationId(String correlationId)
     {
         DatasourceConditionDetail<String> idEquals = DatasourceHelper.isEqual(ActionContextEntity_.CORRELATION_ID,
-                correlationId.toString());
+                correlationId);
         DatasourceConditionInfo condition = DatasourceHelper.and(idEquals);
 
-        DatasourceRelationInfo metadataRelation = DatasourceHelper.fetch(ActionContextEntity_.METADATA);
         DatasourceRelationInfo contextRelation = DatasourceRelationInfo.builder()
                                                                        .property(CONTEXT.getName())
                                                                        .fetch(true)
                                                                        .condition(condition)
-                                                                       .relation(metadataRelation)
                                                                        .build();
 
         DatasourceQuery query = DatasourceQuery.builder().relation(contextRelation).build();

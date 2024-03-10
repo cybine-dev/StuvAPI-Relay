@@ -1,9 +1,9 @@
 package de.cybine.stuvapi.relay.service.lecture;
 
+import de.cybine.quarkus.util.converter.*;
+import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.util.converter.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import lombok.*;
 
 import java.time.*;

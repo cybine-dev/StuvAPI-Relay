@@ -1,7 +1,8 @@
 package de.cybine.stuvapi.relay.exception.handler;
 
 import com.fasterxml.jackson.annotation.*;
-import de.cybine.stuvapi.relay.util.api.response.*;
+import de.cybine.quarkus.api.response.*;
+import de.cybine.quarkus.util.api.response.*;
 import jakarta.validation.*;
 import lombok.*;
 import lombok.extern.jackson.*;
@@ -12,18 +13,18 @@ import org.jboss.resteasy.reactive.server.*;
 public class ApiConstraintViolationExceptionHandler
 {
     @ServerExceptionMapper
-    public RestResponse<ApiResponse<ErrorResponse>> toResponse(ConstraintViolationException exception)
+    public RestResponse<ApiResponse<Void>> toResponse(ConstraintViolationException exception)
     {
-        return ApiResponse.<ErrorResponse>builder()
+        return ApiResponse.<Void>builder()
                           .status(RestResponse.Status.BAD_REQUEST)
-                          .value(ErrorResponse.builder()
-                                              .code("api-constraint-violation")
-                                              .message("invalid request data provided")
-                                              .data("violations", exception.getConstraintViolations()
-                                                                           .stream()
-                                                                           .map(this::createViolation)
-                                                                           .toList())
-                                              .build())
+                          .error(ApiError.builder()
+                                         .code("api-constraint-violation")
+                                         .message("invalid request data provided")
+                                         .data("violations", exception.getConstraintViolations()
+                                                                      .stream()
+                                                                      .map(this::createViolation)
+                                                                      .toList())
+                                         .build())
                           .build()
                           .toResponse();
     }

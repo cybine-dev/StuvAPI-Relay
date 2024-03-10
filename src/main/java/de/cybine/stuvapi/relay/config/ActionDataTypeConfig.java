@@ -2,9 +2,9 @@ package de.cybine.stuvapi.relay.config;
 
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.type.*;
+import de.cybine.quarkus.util.action.data.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.service.action.data.*;
 import de.cybine.stuvapi.relay.service.lecture.*;
 import io.quarkus.runtime.*;
 import jakarta.annotation.*;

@@ -1,12 +1,13 @@
 package de.cybine.stuvapi.relay.service.action;
 
+import de.cybine.quarkus.util.api.*;
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.util.api.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
+import de.cybine.stuvapi.relay.data.action.process.*;
 import io.quarkus.runtime.*;
 import jakarta.annotation.*;
-import jakarta.enterprise.context.*;
+import jakarta.inject.*;
 import lombok.*;
 
 import java.util.*;
@@ -14,12 +15,11 @@ import java.util.*;
 import static de.cybine.stuvapi.relay.data.action.context.ActionContextEntity_.*;
 
 @Startup
-@ApplicationScoped
+@Singleton
 @RequiredArgsConstructor
 public class ContextService
 {
-    private final GenericDatasourceService<ActionContextEntity, ActionContext> service =
-            GenericDatasourceService.forType(
+    private final GenericApiQueryService<ActionContextEntity, ActionContext> service = GenericApiQueryService.forType(
             ActionContextEntity.class, ActionContext.class);
 
     private final ApiFieldResolver resolver;
@@ -27,13 +27,14 @@ public class ContextService
     @PostConstruct
     void setup( )
     {
-        this.resolver.registerTypeRepresentation(ActionContext.class, ActionContextEntity.class)
-                     .registerField("id", ID)
-                     .registerField("metadata_id", METADATA_ID)
-                     .registerField("metadata", METADATA)
-                     .registerField("correlation_id", CORRELATION_ID)
-                     .registerField("item_id", ITEM_ID)
-                     .registerField("processes", PROCESSES);
+        this.resolver.registerType(ActionContext.class)
+                     .withField("id", ID)
+                     .withField("namespace", NAMESPACE)
+                     .withField("category", CATEGORY)
+                     .withField("name", NAME)
+                     .withField("correlation_id", CORRELATION_ID)
+                     .withField("item_id", ITEM_ID)
+                     .withRelation("processes", PROCESSES, ActionProcess.class);
     }
 
     public Optional<ActionContext> fetchById(ActionContextId id)

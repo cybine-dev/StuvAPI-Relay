@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="v1.0.1-action-setup" author="f.boelter">
+        <addColumn tableName="action_context">
+            <column name="namespace" type="VARCHAR(255)"/>
+            <column name="category" type="VARCHAR(255)"/>
+            <column name="name" type="VARCHAR(255)"/>
+        </addColumn>
+
+        <sql>
+            UPDATE action_context
+            JOIN action_metadata ON action_metadata.id = action_context.metadata_id
+            SET action_context.namespace = action_metadata.namespace,
+                action_context.category  = action_metadata.category,
+                action_context.name      = action_metadata.name;
+        </sql>
+
+        <addNotNullConstraint tableName="action_context" columnName="namespace" columnDataType="VARCHAR(255)"/>
+        <addNotNullConstraint tableName="action_context" columnName="category" columnDataType="VARCHAR(255)"/>
+        <addNotNullConstraint tableName="action_context" columnName="name" columnDataType="VARCHAR(255)"/>
+
+        <dropForeignKeyConstraint baseTableName="action_context" constraintName="action_metadata_fk-metadata_id"/>
+        <dropIndex tableName="action_context" indexName="action_context-metadata"/>
+        <dropColumn tableName="action_context" columnName="metadata_id"/>
+        <dropTable tableName="action_metadata"/>
+    </changeSet>
+</databaseChangeLog>

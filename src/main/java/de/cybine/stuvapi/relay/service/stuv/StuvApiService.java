@@ -1,21 +1,19 @@
 package de.cybine.stuvapi.relay.service.stuv;
 
 import com.fasterxml.jackson.core.*;
-import de.cybine.stuvapi.relay.data.action.context.*;
-import de.cybine.stuvapi.relay.data.action.metadata.*;
-import de.cybine.stuvapi.relay.data.action.process.*;
+import de.cybine.quarkus.util.action.data.*;
+import de.cybine.quarkus.util.action.stateful.*;
+import de.cybine.quarkus.util.converter.*;
+import de.cybine.quarkus.util.datasource.*;
+import de.cybine.stuvapi.relay.config.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
 import de.cybine.stuvapi.relay.service.action.*;
-import de.cybine.stuvapi.relay.service.action.data.*;
 import de.cybine.stuvapi.relay.service.lecture.*;
-import de.cybine.stuvapi.relay.util.converter.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import jakarta.annotation.*;
 import jakarta.enterprise.context.*;
-import jakarta.persistence.*;
 import lombok.*;
-import lombok.extern.log4j.*;
+import lombok.extern.slf4j.*;
 
 import java.time.*;
 import java.time.temporal.*;
@@ -23,27 +21,30 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-import static de.cybine.stuvapi.relay.service.action.BaseActionProcessStatus.*;
+import static de.cybine.quarkus.util.action.data.ActionProcessorBuilder.*;
+import static de.cybine.quarkus.util.action.data.ActionProcessorMetadata.*;
+import static de.cybine.stuvapi.relay.service.action.ActionService.*;
 
-@Log4j2
+@Slf4j
 @ApplicationScoped
 @AllArgsConstructor
 public class StuvApiService
 {
-    public static final ActionMetadata SYNC_METADATA = ActionMetadata.builder()
-                                                                     .namespace("stuvapi-relay")
-                                                                     .category("lecture")
-                                                                     .name("sync")
-                                                                     .build();
+    public static final String ACTION_NAMESPACE = "stuvapi-relay";
+    public static final String ACTION_CATEGORY  = "lecture";
+
+    public static final String SYNC_ACTION_NAME = "sync";
+
+    public static final String REGISTER_ROOM_ACTION    = "register-room";
+    public static final String REGISTER_LECTURE_ACTION = "register-lecture";
+    public static final String LECTURE_UPDATE_ACTION   = "lecture-update";
+    public static final String LECTURE_REMOVAL_ACTION  = "lecture-removal";
 
     private final StuvApi           stuvApi;
+    private final RoomService       roomService;
     private final ActionService     actionService;
+    private final ApplicationConfig config;
     private final ConverterRegistry converterRegistry;
-
-    private final EntityManager           entityManager;
-    private final ActionProcessorRegistry actionProcessorRegistry;
-
-    private final RoomService roomService;
 
     private final GenericDatasourceService<LectureEntity, Lecture> lectureService = GenericDatasourceService.forType(
             LectureEntity.class, Lecture.class);
@@ -51,22 +52,16 @@ public class StuvApiService
     @PostConstruct
     void setup( )
     {
-        this.actionProcessorRegistry.registerProcessor(
-                new RoomRegistrationProcessor(this.entityManager, this.converterRegistry, this.roomService));
-        this.actionProcessorRegistry.registerProcessor(
-                new LectureUpdateProcessor(this.entityManager, this.roomService));
-        this.actionProcessorRegistry.registerProcessor(new LectureRemovalProcessor(this.entityManager));
-        this.actionProcessorRegistry.registerProcessor(
-                new LectureRegistrationProcessor(this.entityManager, this.converterRegistry));
-
-        ActionProcessorMetadata termination = ActionProcessorMetadata.builder()
-                                                                     .namespace(SYNC_METADATA.getNamespace())
-                                                                     .category(SYNC_METADATA.getCategory())
-                                                                     .name(SYNC_METADATA.getName())
-                                                                     .toStatus(TERMINATED.getName())
-                                                                     .build();
-
-        this.actionProcessorRegistry.registerProcessor(GenericActionProcessor.of(termination));
+        // @formatter:off
+        WorkflowBuilder.create(ACTION_NAMESPACE, ACTION_CATEGORY, SYNC_ACTION_NAME)
+                       .type(WorkflowType.ACTION)
+                       .with(on(REGISTER_ROOM_ACTION).from(ANY).apply(RoomRegistrationProcessor::apply))
+                       .with(on(REGISTER_LECTURE_ACTION).from(ANY).apply(LectureRegistrationProcessor::apply))
+                       .with(on(LECTURE_UPDATE_ACTION).from(ANY).apply(LectureUpdateProcessor::apply).when(LectureUpdateProcessor::when))
+                       .with(on(LECTURE_REMOVAL_ACTION).from(ANY).apply(LectureRemovalProcessor::apply))
+                       .with(on(TERMINATED_STATE).from(ANY))
+                       .apply(this.actionService);
+        // @formatter:on
     }
 
     /**
@@ -94,58 +89,46 @@ public class StuvApiService
         log.info("Starting lecture sync...");
         log.info("Processing {} persisted and {} fetched lectures", persistentLectures.size(), updateLectures.size());
 
-        ActionContext context = this.actionService.createContext(ActionContextMetadata.of(SYNC_METADATA));
+        String correlationId = this.actionService.beginWorkflow(ACTION_NAMESPACE, ACTION_CATEGORY, SYNC_ACTION_NAME);
 
         log.info("Registering unknown rooms...");
-        this.registerRooms(context.getId(), updateLectures.values()
-                                                          .stream()
-                                                          .map(LectureData::getRooms)
-                                                          .flatMap(Collection::stream)
-                                                          .distinct()
-                                                          .toList());
+        this.registerRooms(correlationId, updateLectures.values()
+                                                        .stream()
+                                                        .map(LectureData::getRooms)
+                                                        .flatMap(Collection::stream)
+                                                        .distinct()
+                                                        .toList());
 
         log.info("Registering unknown lectures...");
-        this.actionService.bulkProcess(updateLectures.values()
+        this.actionService.bulkPerform(updateLectures.values()
                                                      .stream()
                                                      .filter(item -> !persistentLectures.containsKey(item.getId()))
-                                                     .map(item -> ActionProcessMetadata.builder()
-                                                                                       .contextId(context.getId())
-                                                                                       .status(LectureRegistrationProcessor.ACTION)
-                                                                                       .createdAt(ZonedDateTime.now())
-                                                                                       .data(ActionData.of(item))
-                                                                                       .build())
-                                                     .toList(), true);
+                                                     .map(ActionData::of)
+                                                     .map(item -> Action.of(this.createSyncMetadata(correlationId,
+                                                             REGISTER_LECTURE_ACTION), item))
+                                                     .toList());
 
         log.info("Updating known lectures...");
-        this.actionService.bulkProcess(updateLectures.values()
+        this.actionService.bulkPerform(updateLectures.values()
                                                      .stream()
                                                      .filter(item -> persistentLectures.containsKey(item.getId()))
                                                      .map(item -> LectureDataDiff.of(
                                                              persistentLectures.get(item.getId()), item))
-                                                     .map(item -> ActionProcessMetadata.builder()
-                                                                                       .contextId(context.getId())
-                                                                                       .status(LectureUpdateProcessor.ACTION)
-                                                                                       .createdAt(ZonedDateTime.now())
-                                                                                       .data(ActionData.of(item))
-                                                                                       .build())
-                                                     .toList(), true);
+                                                     .map(ActionData::of)
+                                                     .map(item -> Action.of(this.createSyncMetadata(correlationId,
+                                                             LECTURE_UPDATE_ACTION), item))
+                                                     .toList());
 
         log.info("Removing canceled lectures...");
-        List<LectureData> removedLectures = persistentLectures.values()
-                                                              .stream()
-                                                              .filter(item -> !updateLectures.containsKey(item.getId()))
-                                                              .toList();
+        this.actionService.bulkPerform(persistentLectures.values()
+                                                         .stream()
+                                                         .filter(item -> !updateLectures.containsKey(item.getId()))
+                                                         .map(ActionData::of)
+                                                         .map(item -> Action.of(this.createSyncMetadata(correlationId,
+                                                                 LECTURE_REMOVAL_ACTION), item))
+                                                         .toList());
 
-        this.actionService.bulkProcess(removedLectures.stream()
-                                                      .map(item -> ActionProcessMetadata.builder()
-                                                                                        .contextId(context.getId())
-                                                                                        .status(LectureRemovalProcessor.ACTION)
-                                                                                        .createdAt(ZonedDateTime.now())
-                                                                                        .data(ActionData.of(item))
-                                                                                        .build())
-                                                      .toList(), true);
-
-        this.actionService.terminateContext(context.getId());
+        this.actionService.perform(Action.of(this.createSyncMetadata(correlationId, TERMINATED_STATE), null));
         log.info("Finished syncing lectures.");
     }
 
@@ -173,18 +156,28 @@ public class StuvApiService
         return this.converterRegistry.getProcessor(Lecture.class, LectureData.class, tree).toList(lectures).result();
     }
 
-    private void registerRooms(ActionContextId contextId, List<String> roomNames)
+    private void registerRooms(String correlationId, List<String> roomNames)
     {
         Set<String> knownNames = this.roomService.getKnownNames();
-        this.actionService.bulkProcess(roomNames.stream()
+        this.actionService.bulkPerform(roomNames.stream()
                                                 .filter(item -> !knownNames.contains(item))
                                                 .map(item -> Room.builder().name(item).id(RoomId.create()).build())
-                                                .map(item -> ActionProcessMetadata.builder()
-                                                                                  .contextId(contextId)
-                                                                                  .status(RoomRegistrationProcessor.ACTION)
-                                                                                  .createdAt(ZonedDateTime.now())
-                                                                                  .data(ActionData.of(item))
-                                                                                  .build())
-                                                .toList(), true);
+                                                .map(ActionData::of)
+                                                .map(item -> Action.of(
+                                                        this.createSyncMetadata(correlationId, REGISTER_ROOM_ACTION),
+                                                        item))
+                                                .toList());
+    }
+
+    private ActionMetadata createSyncMetadata(String correlationId, String action)
+    {
+        return ActionMetadata.builder()
+                             .namespace(ACTION_NAMESPACE)
+                             .category(ACTION_CATEGORY)
+                             .name(SYNC_ACTION_NAME)
+                             .correlationId(correlationId)
+                             .source(this.config.serviceName())
+                             .action(action)
+                             .build();
     }
 }

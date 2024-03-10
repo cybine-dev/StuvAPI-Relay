@@ -1,1 +1,13 @@
-{}
+{
+    "type_mappings": [ ],
+    "context_mappings": [
+        { "name": "user", "permission": "api-context:user", "priority": 100 },
+        { "name": "admin", "permission": "api-context:admin", "priority": 10 }
+    ],
+    "available_actions": [ "fetch", "fetch_single", "options", "count" ],
+    "capabilities": [
+        { "name": "query:search" },
+        { "name": "query:group_by" },
+        { "name": "query:order" }
+    ]
+}

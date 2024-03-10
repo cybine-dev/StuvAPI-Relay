@@ -1,52 +1,31 @@
 package de.cybine.stuvapi.relay.service.lecture;
 
+import de.cybine.quarkus.util.action.*;
+import de.cybine.quarkus.util.action.data.*;
+import de.cybine.quarkus.util.converter.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
-import de.cybine.stuvapi.relay.service.action.*;
-import de.cybine.stuvapi.relay.service.stuv.*;
-import de.cybine.stuvapi.relay.util.converter.*;
+import io.quarkus.arc.*;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.extern.log4j.*;
+import lombok.experimental.*;
+import lombok.extern.slf4j.*;
 
-@Log4j2
-@RequiredArgsConstructor
-public class LectureRegistrationProcessor implements ActionProcessor<LectureData>
+@Slf4j
+@UtilityClass
+public class LectureRegistrationProcessor
 {
-    public static final String ACTION = "register-lecture";
-
-    private final EntityManager     entityManager;
-    private final ConverterRegistry converterRegistry;
-
-    @Override
-    public ActionProcessorMetadata getMetadata( )
+    public static ActionResult<LectureData> apply(Action action, ActionHelper helper)
     {
-        return ActionProcessorMetadata.builder()
-                                      .namespace(StuvApiService.SYNC_METADATA.getNamespace())
-                                      .category(StuvApiService.SYNC_METADATA.getCategory())
-                                      .name(StuvApiService.SYNC_METADATA.getName())
-                                      .toStatus(ACTION)
-                                      .build();
-    }
+        EntityManager entityManager = Arc.container().select(EntityManager.class).get();
+        ConverterRegistry converterRegistry = Arc.container().select(ConverterRegistry.class).get();
 
-    @Override
-    public boolean shouldExecute(ActionStateTransition transition)
-    {
-        return true;
-    }
+        LectureData data = action.<LectureData>getData().orElseThrow().value();
+        entityManager.persist(converterRegistry.getProcessor(LectureData.class)
+                                               .withIntermediary(Lecture.class)
+                                               .withOutput(LectureEntity.class)
+                                               .withContext("lecture-registered", false)
+                                               .toItem(data)
+                                               .result());
 
-    @Override
-    public ActionProcessorResult<LectureData> process(ActionStateTransition transition)
-    {
-        LectureData data = transition.getNextState().<LectureData>getData().orElseThrow().value();
-
-        Lecture lecture = this.converterRegistry.getProcessor(LectureData.class, Lecture.class)
-                                                .withContext("lecture-registered", false)
-                                                .toItem(data)
-                                                .result();
-
-        this.entityManager.persist(
-                this.converterRegistry.getProcessor(Lecture.class, LectureEntity.class).toItem(lecture).result());
-
-        return ActionProcessorResult.of(data);
+        return helper.createResult(data);
     }
 }

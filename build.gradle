@@ -6,7 +6,9 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    maven {
+        url "https://repository.cybine.de/repository/maven-public/"
+    }
 }
 
 dependencies {
@@ -24,16 +26,23 @@ dependencies {
     implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
     implementation 'io.quarkus:quarkus-smallrye-health'
     implementation 'io.quarkus:quarkus-smallrye-openapi'
+    implementation 'io.quarkus:quarkus-websockets'
 
     implementation 'org.jboss.logmanager:log4j2-jboss-logmanager'
     implementation 'net.sf.biweekly:biweekly:0.6.6'
     implementation 'com.fasterxml.uuid:java-uuid-generator:4.1.0'
 
+    implementation "de.cybine.quarkus:action-processor:${cybineQuarkusUtilsVersion}"
+    implementation "de.cybine.quarkus:api-query:${cybineQuarkusUtilsVersion}"
+    implementation "de.cybine.quarkus:common:${cybineQuarkusUtilsVersion}"
+    implementation "de.cybine.quarkus:datasource-query:${cybineQuarkusUtilsVersion}"
+    implementation "de.cybine.quarkus:type-converter:${cybineQuarkusUtilsVersion}"
+
     testImplementation 'io.quarkus:quarkus-junit5'
 }
 
 group 'de.cybine'
-version '2.0-SNAPSHOT'
+version '3.0-SNAPSHOT'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17

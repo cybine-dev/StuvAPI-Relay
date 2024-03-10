@@ -5,11 +5,12 @@ import biweekly.component.*;
 import biweekly.io.*;
 import biweekly.property.*;
 import biweekly.util.Duration;
+import de.cybine.quarkus.data.util.primitive.*;
+import de.cybine.quarkus.util.api.*;
+import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.config.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.data.util.primitive.*;
-import de.cybine.stuvapi.relay.util.datasource.*;
 import jakarta.ejb.*;
 import jakarta.enterprise.context.*;
 import lombok.*;
@@ -29,7 +30,7 @@ public class CalendarService
 {
     private final ApplicationConfig applicationConfig;
 
-    private final GenericDatasourceService<LectureEntity, Lecture> lectureService = GenericDatasourceService.forType(
+    private final GenericApiQueryService<LectureEntity, Lecture> lectureService = GenericApiQueryService.forType(
             LectureEntity.class, Lecture.class);
 
     public String getCalendarFileContent(String course) throws IOException

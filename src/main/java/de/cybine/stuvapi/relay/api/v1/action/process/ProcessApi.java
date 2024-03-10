@@ -1,9 +1,9 @@
 package de.cybine.stuvapi.relay.api.v1.action.process;
 
+import de.cybine.quarkus.util.api.query.*;
+import de.cybine.quarkus.util.api.response.*;
+import de.cybine.quarkus.util.cloudevent.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
-import de.cybine.stuvapi.relay.util.api.query.*;
-import de.cybine.stuvapi.relay.util.api.response.*;
-import de.cybine.stuvapi.relay.util.cloudevent.*;
 import jakarta.annotation.security.*;
 import jakarta.validation.*;
 import jakarta.validation.constraints.*;
@@ -28,21 +28,21 @@ public interface ProcessApi
 
     @GET
     @Path("/find/event-id/{event-id}")
-    RestResponse<ApiResponse<ActionProcess>> fetchByEventId(@PathParam("event-id") UUID eventId);
+    RestResponse<ApiResponse<ActionProcess>> fetchByEventId(@PathParam("event-id") String eventId);
 
     @GET
     @Path("/find/correlation-id/{correlation-id}")
     RestResponse<ApiResponse<List<ActionProcess>>> fetchByCorrelationId(
-            @PathParam("correlation-id") UUID correlationId);
+            @PathParam("correlation-id") String correlationId);
 
     @GET
     @Path("/cloud-event/event-id/{event-id}")
-    RestResponse<ApiResponse<CloudEvent>> fetchCloudEventByEventId(@PathParam("event-id") UUID eventId);
+    RestResponse<ApiResponse<CloudEvent>> fetchCloudEventByEventId(@PathParam("event-id") String eventId);
 
     @GET
     @Path("/cloud-event/correlation-id/{correlation-id}")
     RestResponse<ApiResponse<List<CloudEvent>>> fetchCloudEventsByCorrelationId(
-            @PathParam("correlation-id") UUID correlationId);
+            @PathParam("correlation-id") String correlationId);
 
     @POST
     RestResponse<ApiResponse<List<ActionProcess>>> fetch(@Valid @NotNull ApiQuery query);

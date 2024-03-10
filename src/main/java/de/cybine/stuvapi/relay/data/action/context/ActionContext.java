@@ -2,10 +2,9 @@ package de.cybine.stuvapi.relay.data.action.context;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.*;
-import de.cybine.stuvapi.relay.data.action.metadata.*;
+import de.cybine.quarkus.data.util.*;
+import de.cybine.quarkus.util.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
-import de.cybine.stuvapi.relay.data.util.*;
-import de.cybine.stuvapi.relay.util.*;
 import lombok.*;
 import lombok.extern.jackson.*;
 
@@ -26,14 +25,14 @@ public class ActionContext implements Serializable, WithId<ActionContextId>
     @JsonDeserialize(using = ActionContextId.Deserializer.class)
     private final ActionContextId id;
 
-    @JsonProperty("metadata_id")
-    @JsonView(Views.Simple.class)
-    @JsonDeserialize(using = ActionMetadataId.Deserializer.class)
-    private final ActionMetadataId metadataId;
+    @JsonProperty("namespace")
+    private final String namespace;
 
-    @JsonProperty("metadata")
-    @JsonView(Views.Extended.class)
-    private final ActionMetadata metadata;
+    @JsonProperty("category")
+    private final String category;
+
+    @JsonProperty("name")
+    private final String name;
 
     @Builder.Default
     @JsonProperty("correlation_id")
@@ -43,13 +42,7 @@ public class ActionContext implements Serializable, WithId<ActionContextId>
     private final String itemId;
 
     @JsonProperty("processes")
-    @JsonView(Views.Extended.class)
     private final Set<ActionProcess> processes;
-
-    public Optional<ActionMetadata> getMetadata( )
-    {
-        return Optional.ofNullable(this.metadata);
-    }
 
     public Optional<String> getItemId( )
     {
@@ -62,7 +55,6 @@ public class ActionContext implements Serializable, WithId<ActionContextId>
     }
 
     @JsonProperty("process_ids")
-    @JsonView(Views.Simple.class)
     private Optional<Set<ActionProcessId>> getProcessIds( )
     {
         return this.getProcesses().map(items -> items.stream().map(WithId::getId).collect(Collectors.toSet()));

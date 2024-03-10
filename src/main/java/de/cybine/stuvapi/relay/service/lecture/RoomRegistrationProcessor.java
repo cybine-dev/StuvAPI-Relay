@@ -1,51 +1,30 @@
 package de.cybine.stuvapi.relay.service.lecture;
 
+import de.cybine.quarkus.util.action.*;
+import de.cybine.quarkus.util.action.data.*;
+import de.cybine.quarkus.util.converter.*;
 import de.cybine.stuvapi.relay.data.room.*;
-import de.cybine.stuvapi.relay.service.action.*;
-import de.cybine.stuvapi.relay.service.stuv.*;
-import de.cybine.stuvapi.relay.util.converter.*;
+import io.quarkus.arc.*;
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.extern.log4j.*;
+import lombok.experimental.*;
+import lombok.extern.slf4j.*;
 
-@Log4j2
-@RequiredArgsConstructor
-public class RoomRegistrationProcessor implements ActionProcessor<Room>
+@Slf4j
+@UtilityClass
+public class RoomRegistrationProcessor
 {
-    public static final String ACTION = "register-room";
-
-    private final EntityManager     entityManager;
-    private final ConverterRegistry converterRegistry;
-
-    private final RoomService roomService;
-
-    @Override
-    public ActionProcessorMetadata getMetadata( )
+    public static ActionResult<Room> apply(Action action, ActionHelper helper)
     {
-        return ActionProcessorMetadata.builder()
-                                      .namespace(StuvApiService.SYNC_METADATA.getNamespace())
-                                      .category(StuvApiService.SYNC_METADATA.getCategory())
-                                      .name(StuvApiService.SYNC_METADATA.getName())
-                                      .toStatus(ACTION)
-                                      .build();
-    }
+        EntityManager entityManager = Arc.container().select(EntityManager.class).get();
+        ConverterRegistry converterRegistry = Arc.container().select(ConverterRegistry.class).get();
+        RoomService roomService = Arc.container().select(RoomService.class).get();
 
-    @Override
-    public boolean shouldExecute(ActionStateTransition transition)
-    {
-        return true;
-    }
-
-    @Override
-    public ActionProcessorResult<Room> process(ActionStateTransition transition)
-    {
-        Room room = transition.getNextState().<Room>getData().orElseThrow().value();
+        Room room = action.<Room>getData().orElseThrow().value();
 
         log.debug("Registering new room '{}'", room.getName());
-        this.roomService.registerRoomId(room.getName(), room.getId());
-        this.entityManager.persist(
-                this.converterRegistry.getProcessor(Room.class, RoomEntity.class).toItem(room).result());
+        roomService.registerRoomId(room.getName(), room.getId());
+        entityManager.persist(converterRegistry.getProcessor(Room.class, RoomEntity.class).toItem(room).result());
 
-        return ActionProcessorResult.of(room);
+        return helper.createResult(room);
     }
 }

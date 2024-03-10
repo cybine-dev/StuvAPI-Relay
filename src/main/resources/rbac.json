@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "name": "user",
+        "permissions": [
+            "api-context:user"
+        ]
+    },
+    {
+        "name": "admin",
+        "permissions": [
+            "api-context:admin"
+        ]
+    }
+]

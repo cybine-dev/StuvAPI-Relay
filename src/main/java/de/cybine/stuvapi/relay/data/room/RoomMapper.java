@@ -1,8 +1,8 @@
 package de.cybine.stuvapi.relay.data.room;
 
+import de.cybine.quarkus.data.util.primitive.*;
+import de.cybine.quarkus.util.converter.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
-import de.cybine.stuvapi.relay.data.util.primitive.*;
-import de.cybine.stuvapi.relay.util.converter.*;
 
 public class RoomMapper implements EntityMapper<RoomEntity, Room>
 {
@@ -16,6 +16,18 @@ public class RoomMapper implements EntityMapper<RoomEntity, Room>
     public Class<Room> getDataType( )
     {
         return Room.class;
+    }
+
+    @Override
+    public ConverterMetadataBuilder getToEntityMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(Lecture.class, LectureEntity.class);
+    }
+
+    @Override
+    public ConverterMetadataBuilder getToDataMetadata(ConverterMetadataBuilder metadata)
+    {
+        return metadata.withRelation(LectureEntity.class, Lecture.class);
     }
 
     @Override
