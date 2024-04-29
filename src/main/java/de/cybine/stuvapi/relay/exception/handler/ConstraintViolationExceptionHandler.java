@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.exception.handler;
 
 import de.cybine.quarkus.api.response.*;
-import de.cybine.quarkus.util.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import lombok.extern.slf4j.*;
 import org.hibernate.exception.*;
 import org.jboss.resteasy.reactive.*;
@@ -16,12 +16,12 @@ public class ConstraintViolationExceptionHandler
     {
         log.debug("Caught handled exception", exception);
         return ApiResponse.<Void>builder()
-                          .status(RestResponse.Status.CONFLICT)
+                          .statusCode(RestResponse.Status.CONFLICT.getStatusCode())
                           .error(ApiError.builder()
                                          .code("db-constraint-violation")
                                          .message(exception.getCause().getMessage())
                                          .build())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 }

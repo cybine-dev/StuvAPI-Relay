@@ -1,7 +1,8 @@
 package de.cybine.stuvapi.relay.api.v1.lecture;
 
+import de.cybine.quarkus.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import de.cybine.quarkus.util.api.query.*;
-import de.cybine.quarkus.util.api.response.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import de.cybine.stuvapi.relay.service.lecture.*;
 import jakarta.annotation.security.*;
@@ -21,7 +22,10 @@ public class LectureResource implements LectureApi
     @Override
     public RestResponse<ApiResponse<List<Lecture>>> fetch(ApiQuery query)
     {
-        return ApiResponse.<List<Lecture>>builder().value(this.service.fetch(query)).build().toResponse();
+        return ApiResponse.<List<Lecture>>builder()
+                          .value(this.service.fetch(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -30,18 +34,24 @@ public class LectureResource implements LectureApi
         return ApiResponse.<Lecture>builder()
                           .value(this.service.fetchSingle(query).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<ApiCountInfo>>> fetchCount(ApiCountQuery query)
     {
-        return ApiResponse.<List<ApiCountInfo>>builder().value(this.service.fetchTotal(query)).build().toResponse();
+        return ApiResponse.<List<ApiCountInfo>>builder()
+                          .value(this.service.fetchTotal(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<Object>>> fetchOptions(ApiOptionQuery query)
     {
-        return ApiResponse.<List<Object>>builder().value(this.service.fetchOptions(query)).build().toResponse();
+        return ApiResponse.<List<Object>>builder()
+                          .value(this.service.fetchOptions(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 }

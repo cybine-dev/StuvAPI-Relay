@@ -1,6 +1,6 @@
 package de.cybine.stuvapi.relay.api.v1.action.handle;
 
-import de.cybine.quarkus.util.api.response.*;
+import de.cybine.quarkus.api.response.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
 import io.quarkus.security.*;
 import jakarta.validation.constraints.*;

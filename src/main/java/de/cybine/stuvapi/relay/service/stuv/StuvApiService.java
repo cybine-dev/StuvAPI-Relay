@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
-import static de.cybine.quarkus.util.action.data.ActionProcessorBuilder.*;
+import static de.cybine.quarkus.util.action.ActionProcessorBuilder.*;
 import static de.cybine.quarkus.util.action.data.ActionProcessorMetadata.*;
 import static de.cybine.stuvapi.relay.service.action.ActionService.*;
 

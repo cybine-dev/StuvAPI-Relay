@@ -33,6 +33,7 @@ dependencies {
     implementation 'com.fasterxml.uuid:java-uuid-generator:4.1.0'
 
     implementation "de.cybine.quarkus:action-processor:${cybineQuarkusUtilsVersion}"
+    implementation "de.cybine.quarkus:api-common:${cybineQuarkusUtilsVersion}"
     implementation "de.cybine.quarkus:api-query:${cybineQuarkusUtilsVersion}"
     implementation "de.cybine.quarkus:common:${cybineQuarkusUtilsVersion}"
     implementation "de.cybine.quarkus:datasource-query:${cybineQuarkusUtilsVersion}"

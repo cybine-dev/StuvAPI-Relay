@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.api.v1.lecture;
 
+import de.cybine.quarkus.api.response.*;
 import de.cybine.quarkus.util.api.query.*;
-import de.cybine.quarkus.util.api.response.*;
 import de.cybine.stuvapi.relay.data.lecture.*;
 import jakarta.annotation.security.*;
 import jakarta.validation.*;

@@ -10,9 +10,9 @@ import de.cybine.quarkus.util.datasource.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
 import io.quarkus.runtime.*;
+import io.quarkus.security.identity.*;
 import jakarta.enterprise.context.*;
 import jakarta.inject.*;
-import jakarta.ws.rs.core.*;
 import lombok.*;
 import lombok.extern.slf4j.*;
 import org.hibernate.*;
@@ -34,8 +34,8 @@ public class ActionService implements StatefulActionService
     private final ConverterRegistry converterRegistry;
     private final ContextService    contextService;
 
-    private final SessionFactory  sessionFactory;
-    private final SecurityContext securityContext;
+    private final SessionFactory   sessionFactory;
+    private final SecurityIdentity securityIdentity;
 
     @Override
     public void registerWorkflow(Workflow workflow)
@@ -375,10 +375,10 @@ public class ActionService implements StatefulActionService
     {
         try
         {
-            if (this.securityContext.getUserPrincipal() == null)
+            if (this.securityIdentity == null || this.securityIdentity.getPrincipal() == null)
                 return Optional.empty();
 
-            return Optional.ofNullable(this.securityContext.getUserPrincipal().getName());
+            return Optional.ofNullable(this.securityIdentity.getPrincipal().getName());
         }
         catch (ContextNotActiveException | IllegalStateException exception)
         {
@@ -408,6 +408,6 @@ public class ActionService implements StatefulActionService
 
     private ActionHelper createHelper(ActionMetadata metadata, ActionResult<?> previousState)
     {
-        return new ActionHelper(this, metadata, previousState, this::updateItemId);
+        return new ActionHelper(this, metadata, previousState, this.securityIdentity, this::updateItemId);
     }
 }

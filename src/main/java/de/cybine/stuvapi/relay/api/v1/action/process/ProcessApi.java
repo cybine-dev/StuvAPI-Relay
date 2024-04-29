@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.api.v1.action.process;
 
+import de.cybine.quarkus.api.response.*;
 import de.cybine.quarkus.util.api.query.*;
-import de.cybine.quarkus.util.api.response.*;
 import de.cybine.quarkus.util.cloudevent.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
 import jakarta.annotation.security.*;

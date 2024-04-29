@@ -1,7 +1,8 @@
 package de.cybine.stuvapi.relay.api.v1.action.process;
 
+import de.cybine.quarkus.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import de.cybine.quarkus.util.api.query.*;
-import de.cybine.quarkus.util.api.response.*;
 import de.cybine.quarkus.util.cloudevent.*;
 import de.cybine.stuvapi.relay.data.action.process.*;
 import de.cybine.stuvapi.relay.service.action.*;
@@ -25,7 +26,7 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<ActionProcess>builder()
                           .value(this.service.fetchById(ActionProcessId.of(id)).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<ActionProcess>builder()
                           .value(this.service.fetchByEventId(eventId).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -43,7 +44,7 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<List<ActionProcess>>builder()
                           .value(this.service.fetchByCorrelationId(correlationId))
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<CloudEvent>builder()
                           .value(this.service.fetchAsCloudEventByEventId(eventId).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -61,13 +62,16 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<List<CloudEvent>>builder()
                           .value(this.service.fetchAsCloudEventsByCorrelationId(correlationId))
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<ActionProcess>>> fetch(ApiQuery query)
     {
-        return ApiResponse.<List<ActionProcess>>builder().value(this.service.fetch(query)).build().toResponse();
+        return ApiResponse.<List<ActionProcess>>builder()
+                          .value(this.service.fetch(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -76,18 +80,24 @@ public class ProcessResource implements ProcessApi
         return ApiResponse.<ActionProcess>builder()
                           .value(this.service.fetchSingle(query).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<ApiCountInfo>>> fetchCount(ApiCountQuery query)
     {
-        return ApiResponse.<List<ApiCountInfo>>builder().value(this.service.fetchTotal(query)).build().toResponse();
+        return ApiResponse.<List<ApiCountInfo>>builder()
+                          .value(this.service.fetchTotal(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<Object>>> fetchOptions(ApiOptionQuery query)
     {
-        return ApiResponse.<List<Object>>builder().value(this.service.fetchOptions(query)).build().toResponse();
+        return ApiResponse.<List<Object>>builder()
+                          .value(this.service.fetchOptions(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 }

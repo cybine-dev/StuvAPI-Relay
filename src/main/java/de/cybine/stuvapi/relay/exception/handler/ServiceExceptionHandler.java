@@ -1,7 +1,8 @@
 package de.cybine.stuvapi.relay.exception.handler;
 
+import de.cybine.quarkus.api.response.*;
 import de.cybine.quarkus.exception.*;
-import de.cybine.quarkus.util.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import lombok.extern.slf4j.*;
 import org.jboss.resteasy.reactive.*;
 import org.jboss.resteasy.reactive.server.*;
@@ -15,9 +16,9 @@ public class ServiceExceptionHandler
     {
         log.debug("Caught handled exception", exception);
         return ApiResponse.<Void>builder()
-                          .status(RestResponse.Status.fromStatusCode(exception.getStatusCode()))
+                          .statusCode(exception.getStatusCode())
                           .error(exception.toResponse())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 }

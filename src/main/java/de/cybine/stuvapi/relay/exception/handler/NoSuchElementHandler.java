@@ -1,7 +1,7 @@
 package de.cybine.stuvapi.relay.exception.handler;
 
 import de.cybine.quarkus.api.response.*;
-import de.cybine.quarkus.util.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import lombok.extern.slf4j.*;
 import org.jboss.resteasy.reactive.*;
 import org.jboss.resteasy.reactive.server.*;
@@ -17,9 +17,9 @@ public class NoSuchElementHandler
     {
         log.debug("Caught handled exception", exception);
         return ApiResponse.<Void>builder()
-                          .status(RestResponse.Status.NOT_FOUND)
+                          .statusCode(RestResponse.Status.NOT_FOUND.getStatusCode())
                           .error(ApiError.builder().code("element-not-found").message(exception.getMessage()).build())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 }

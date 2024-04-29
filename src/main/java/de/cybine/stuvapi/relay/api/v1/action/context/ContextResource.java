@@ -1,7 +1,8 @@
 package de.cybine.stuvapi.relay.api.v1.action.context;
 
+import de.cybine.quarkus.api.response.*;
+import de.cybine.quarkus.util.api.*;
 import de.cybine.quarkus.util.api.query.*;
-import de.cybine.quarkus.util.api.response.*;
 import de.cybine.stuvapi.relay.data.action.context.*;
 import de.cybine.stuvapi.relay.service.action.*;
 import jakarta.annotation.security.*;
@@ -24,7 +25,7 @@ public class ContextResource implements ContextApi
         return ApiResponse.<ActionContext>builder()
                           .value(this.service.fetchById(ActionContextId.of(id)).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -33,13 +34,16 @@ public class ContextResource implements ContextApi
         return ApiResponse.<ActionContext>builder()
                           .value(this.service.fetchByCorrelationId(correlationId).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<ActionContext>>> fetch(ApiQuery query)
     {
-        return ApiResponse.<List<ActionContext>>builder().value(this.service.fetch(query)).build().toResponse();
+        return ApiResponse.<List<ActionContext>>builder()
+                          .value(this.service.fetch(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
@@ -48,18 +52,24 @@ public class ContextResource implements ContextApi
         return ApiResponse.<ActionContext>builder()
                           .value(this.service.fetchSingle(query).orElseThrow())
                           .build()
-                          .toResponse();
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<ApiCountInfo>>> fetchCount(ApiCountQuery query)
     {
-        return ApiResponse.<List<ApiCountInfo>>builder().value(this.service.fetchTotal(query)).build().toResponse();
+        return ApiResponse.<List<ApiCountInfo>>builder()
+                          .value(this.service.fetchTotal(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 
     @Override
     public RestResponse<ApiResponse<List<Object>>> fetchOptions(ApiOptionQuery query)
     {
-        return ApiResponse.<List<Object>>builder().value(this.service.fetchOptions(query)).build().toResponse();
+        return ApiResponse.<List<Object>>builder()
+                          .value(this.service.fetchOptions(query))
+                          .build()
+                          .transform(ApiQueryHelper::createResponse);
     }
 }
