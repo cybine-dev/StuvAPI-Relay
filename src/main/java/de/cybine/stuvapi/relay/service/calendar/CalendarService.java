@@ -123,10 +123,25 @@ public class CalendarService
     {
         List<String> categories = new ArrayList<>();
         if (data.isExam())
+        {
             categories.add(CalendarCategories.EXAM.getDisplayName());
+            return categories;
+        }
 
         if (data.isHoliday())
+        {
             categories.add(CalendarCategories.HOLIDAY.getDisplayName());
+            return categories;
+        }
+
+        if(data.getRooms().isEmpty())
+        {
+            categories.add(data.getName());
+            categories.add(CalendarCategories.BLOCKER.getDisplayName());
+            categories.add(CalendarCategories.ONLINE.getDisplayName());
+
+            return categories;
+        }
 
         if (data.isRegularLecture())
         {

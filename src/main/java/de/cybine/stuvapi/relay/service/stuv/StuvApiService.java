@@ -149,11 +149,12 @@ public class StuvApiService
         ConverterTree tree = ConverterTree.builder().constraint(constraint).build();
 
         List<LectureEntity> entities = this.lectureService.fetchEntities(query);
-        List<Lecture> lectures = this.converterRegistry.getProcessor(LectureEntity.class, Lecture.class, tree)
-                                                       .toList(entities)
-                                                       .result();
-
-        return this.converterRegistry.getProcessor(Lecture.class, LectureData.class, tree).toList(lectures).result();
+        return this.converterRegistry.getProcessor(LectureEntity.class)
+                                     .withTree(tree)
+                                     .withIntermediary(Lecture.class)
+                                     .withOutput(LectureData.class)
+                                     .toList(entities)
+                                     .result();
     }
 
     private void registerRooms(String correlationId, List<String> roomNames)
